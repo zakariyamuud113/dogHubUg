@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,16 +11,64 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const featuredProducts = [
-    { id: 1, name: "Premium Leather Collar", price: 29.99, image: "/placeholder.svg", category: "Accessories" },
-    { id: 2, name: "Organic Chicken Treats", price: 15.99, image: "/placeholder.svg", category: "Food" },
-    { id: 3, name: "Luxury Dog Bed", price: 89.99, image: "/placeholder.svg", category: "Accessories" },
-    { id: 4, name: "Training Harness", price: 34.99, image: "/placeholder.svg", category: "Accessories" },
+    { 
+      id: 1, 
+      name: "Premium Leather Collar", 
+      price: 29.99, 
+      image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=400&fit=crop", 
+      category: "Accessories" 
+    },
+    { 
+      id: 2, 
+      name: "Organic Chicken Treats", 
+      price: 15.99, 
+      image: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=400&h=400&fit=crop", 
+      category: "Food" 
+    },
+    { 
+      id: 3, 
+      name: "Luxury Dog Bed", 
+      price: 89.99, 
+      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop", 
+      category: "Accessories" 
+    },
+    { 
+      id: 4, 
+      name: "Training Harness", 
+      price: 34.99, 
+      image: "https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=400&h=400&fit=crop", 
+      category: "Accessories" 
+    },
   ];
 
   const featuredDogs = [
-    { id: 1, name: "Buddy", breed: "Golden Retriever", age: "2 years", location: "New York", price: 800, image: "/placeholder.svg" },
-    { id: 2, name: "Luna", breed: "Husky", age: "6 months", location: "California", price: 1200, image: "/placeholder.svg" },
-    { id: 3, name: "Max", breed: "German Shepherd", age: "1 year", location: "Texas", price: 950, image: "/placeholder.svg" },
+    { 
+      id: 1, 
+      name: "Buddy", 
+      breed: "Golden Retriever", 
+      age: "2 years", 
+      location: "New York", 
+      price: 800, 
+      image: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop" 
+    },
+    { 
+      id: 2, 
+      name: "Luna", 
+      breed: "Husky", 
+      age: "6 months", 
+      location: "California", 
+      price: 1200, 
+      image: "https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=400&h=400&fit=crop" 
+    },
+    { 
+      id: 3, 
+      name: "Max", 
+      breed: "German Shepherd", 
+      age: "1 year", 
+      location: "Texas", 
+      price: 950, 
+      image: "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=400&h=400&fit=crop" 
+    },
   ];
 
   const services = [
