@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,7 +51,7 @@ const Marketplace = () => {
       location: "New York",
       price: 800,
       type: "For Sale",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop",
       vaccinated: true,
       neutered: true,
       description: "Friendly and energetic golden retriever looking for a loving home.",
@@ -67,7 +66,7 @@ const Marketplace = () => {
       location: "California",
       price: 1200,
       type: "For Sale",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=400&h=400&fit=crop",
       vaccinated: true,
       neutered: false,
       description: "Beautiful husky puppy with striking blue eyes.",
@@ -82,7 +81,7 @@ const Marketplace = () => {
       location: "Texas",
       price: 0,
       type: "Adoption",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=400&h=400&fit=crop",
       vaccinated: true,
       neutered: true,
       description: "Rescued German Shepherd looking for a second chance at love.",
@@ -97,7 +96,7 @@ const Marketplace = () => {
       location: "Florida",
       price: 600,
       type: "For Sale",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
       vaccinated: true,
       neutered: true,
       description: "Sweet labrador who loves playing fetch and swimming.",
@@ -112,7 +111,7 @@ const Marketplace = () => {
       location: "Illinois",
       price: 0,
       type: "Adoption",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=400&fit=crop",
       vaccinated: false,
       neutered: false,
       description: "Adorable mixed breed puppy ready for a forever home.",
@@ -127,11 +126,41 @@ const Marketplace = () => {
       location: "New York",
       price: 900,
       type: "For Sale",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop",
       vaccinated: true,
       neutered: true,
       description: "Gentle bulldog with a calm temperament, great with kids.",
       contact: { phone: "(555) 789-0123", email: "bulldogowner@example.com" }
+    },
+    {
+      id: 7,
+      name: "Daisy",
+      breed: "Poodle",
+      age: "8 months",
+      ageCategory: "puppy",
+      location: "California",
+      price: 1000,
+      type: "For Sale",
+      image: "https://images.unsplash.com/photo-1616190244161-03181958c5c8?w=400&h=400&fit=crop",
+      vaccinated: true,
+      neutered: false,
+      description: "Intelligent and hypoallergenic poodle puppy.",
+      contact: { phone: "(555) 111-2222", email: "poodlebreeder@example.com" }
+    },
+    {
+      id: 8,
+      name: "Zeus",
+      breed: "German Shepherd",
+      age: "4 years",
+      ageCategory: "adult",
+      location: "Texas", 
+      price: 700,
+      type: "For Sale",
+      image: "https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=400&fit=crop",
+      vaccinated: true,
+      neutered: true,
+      description: "Well-trained German Shepherd, excellent guard dog.",
+      contact: { phone: "(555) 333-4444", email: "k9trainer@example.com" }
     }
   ];
 
