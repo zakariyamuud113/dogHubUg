@@ -323,58 +323,6 @@ const Services = () => {
         </div>
       </section>
     </div>
-     {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12 px-4">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Dog className="h-6 w-6 text-orange-500" />
-                <h4 className="text-xl font-bold">DOGHub</h4>
-              </div>
-              <p className="text-gray-400 mb-4">Your comprehensive platform for everything dog-related.</p>
-              <div className="flex space-x-4">
-                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                  <Heart className="h-4 w-4" />
-                </div>
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <Users className="h-4 w-4" />
-                </div>
-              </div>
-            </div>
-            <div>
-              <h5 className="font-semibold mb-4">Shop</h5>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/store" className="hover:text-white transition-colors">Accessories</Link></li>
-                <li><Link to="/store" className="hover:text-white transition-colors">Dog Food</Link></li>
-                <li><Link to="/store" className="hover:text-white transition-colors">Toys</Link></li>
-                <li><Link to="/store" className="hover:text-white transition-colors">Grooming</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="font-semibold mb-4">Services</h5>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/services" className="hover:text-white transition-colors">Veterinarians</Link></li>
-                <li><Link to="/services" className="hover:text-white transition-colors">Dog Trainers</Link></li>
-                <li><Link to="/services" className="hover:text-white transition-colors">Pet Sitters</Link></li>
-                <li><Link to="/services" className="hover:text-white transition-colors">Groomers</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="font-semibold mb-4">Community</h5>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-                <li><Link to="/lost-found" className="hover:text-white transition-colors">Lost & Found</Link></li>
-                <li><Link to="/marketplace" className="hover:text-white transition-colors">Adoption</Link></li>
-                <li><Link to="/donate" className="hover:text-white transition-colors">Donate</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 DOGHub. All rights reserved. Made with ❤️ for dog lovers everywhere.</p>
-          </div>
-        </div>
-      </footer>
   );
 };
 
