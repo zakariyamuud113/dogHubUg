@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dog, ShoppingCart, Heart, MapPin, Calendar, Filter, Search } from "lucide-react";
+import { Dog, ShoppingCart, Heart, MapPin, Calendar, Filter, Search, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 
