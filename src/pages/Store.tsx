@@ -292,78 +292,82 @@ const Store = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                <div className="relative">
-                  <div className="aspect-square bg-gray-100 rounded-t-lg overflow-hidden">
-                    <img 
-                      src={product.image} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                    />
-                  </div>
-                  
-                  {/* Badges */}
-                  <div className="absolute top-2 left-2 flex flex-col gap-1">
-                    {product.isNew && (
-                      <Badge className="bg-green-500 hover:bg-green-600">New</Badge>
-                    )}
-                    {product.isSale && (
-                      <Badge className="bg-red-500 hover:bg-red-600">Sale</Badge>
-                    )}
-                  </div>
-                  
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="absolute top-2 right-2 bg-white/80 hover:bg-white p-2"
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                <CardContent className="p-4">
-                  <h4 className="font-semibold text-lg mb-2 line-clamp-2">{product.name}</h4>
-                  
-                  <div className="flex items-center mb-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < Math.floor(product.rating)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
+              <Link key={product.id} to={`/product/${product.id}`}>
+                <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer">
+                  <div className="relative">
+                    <div className="aspect-square bg-gray-100 rounded-t-lg overflow-hidden">
+                      <img 
+                        src={product.image} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                      />
                     </div>
-                    <span className="text-sm text-gray-500 ml-2">
-                      {product.rating} ({product.reviews})
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl font-bold text-orange-600">
-                        ${product.price}
-                      </span>
-                      {product.originalPrice && (
-                        <span className="text-sm text-gray-500 line-through">
-                          ${product.originalPrice}
-                        </span>
+                    
+                    {/* Badges */}
+                    <div className="absolute top-2 left-2 flex flex-col gap-1">
+                      {product.isNew && (
+                        <Badge className="bg-green-500 hover:bg-green-600">New</Badge>
+                      )}
+                      {product.isSale && (
+                        <Badge className="bg-red-500 hover:bg-red-600">Sale</Badge>
                       )}
                     </div>
+                    
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-2 right-2 bg-white/80 hover:bg-white p-2"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <Heart className="h-4 w-4" />
+                    </Button>
                   </div>
                   
-                  <Button 
-                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                    disabled={!product.inStock}
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    {product.inStock ? "Add to Cart" : "Out of Stock"}
-                  </Button>
-                </CardContent>
-              </Card>
+                  <CardContent className="p-4">
+                    <h4 className="font-semibold text-lg mb-2 line-clamp-2">{product.name}</h4>
+                    
+                    <div className="flex items-center mb-2">
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 ${
+                              i < Math.floor(product.rating)
+                                ? "text-yellow-400 fill-current"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-500 ml-2">
+                        {product.rating} ({product.reviews})
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl font-bold text-orange-600">
+                          ${product.price}
+                        </span>
+                        {product.originalPrice && (
+                          <span className="text-sm text-gray-500 line-through">
+                            ${product.originalPrice}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                      disabled={!product.inStock}
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      {product.inStock ? "Add to Cart" : "Out of Stock"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
 
