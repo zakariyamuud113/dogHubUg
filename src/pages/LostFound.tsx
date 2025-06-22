@@ -1,13 +1,12 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dog, MapPin, Calendar, Phone, Mail, Search, Filter, AlertTriangle, Heart } from "lucide-react";
+import { Dog, ShoppingCart, MapPin, Calendar, Search, Heart, Phone, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 
 const LostFound = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -91,7 +90,7 @@ const LostFound = () => {
       lastSeen: "2024-01-10",
       location: "Rescue Center, Illinois",
       description: "1-year-old Labrador mix with lots of energy. Loves fetch and swimming. Would do well with an active owner.",
-      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      image: "https://images.unsplash.com/photo-1518717743-49959800b1f6?w=400&h=400&fit=crop",
       contact: { phone: "(555) 654-3210", email: "rescue@example.com", name: "Second Chance Rescue" },
       reward: null,
       urgent: false
@@ -122,7 +121,7 @@ const LostFound = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
@@ -164,7 +163,7 @@ const LostFound = () => {
       <section className="py-4 px-4 bg-yellow-100 border-b border-yellow-200">
         <div className="container mx-auto">
           <div className="flex items-center justify-center text-yellow-800">
-            <AlertTriangle className="h-5 w-5 mr-2" />
+            <AlertCircle className="h-5 w-5 mr-2" />
             <span className="text-sm">
               <strong>Emergency:</strong> If you find an injured dog, please contact local emergency veterinary services immediately.
             </span>
@@ -339,6 +338,9 @@ const LostFound = () => {
           </Button>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

@@ -1,141 +1,205 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dog, MapPin, Star, Phone, Mail, Clock, DollarSign, Search, Filter } from "lucide-react";
+import { Dog, ShoppingCart, MapPin, Star, Phone, Calendar, Filter, Search, Stethoscope, Scissors, User, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 
 const Services = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedService, setSelectedService] = useState("all");
-  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
-  const serviceTypes = [
+  const categories = [
     { id: "all", name: "All Services" },
     { id: "veterinary", name: "Veterinary" },
+    { id: "training", name: "Dog Training" },
     { id: "grooming", name: "Grooming" },
-    { id: "training", name: "Training" },
-    { id: "walking", name: "Dog Walking" },
-    { id: "sitting", name: "Pet Sitting" },
-    { id: "boarding", name: "Boarding" },
-  ];
-
-  const locations = [
-    { id: "all", name: "All Locations" },
-    { id: "new-york", name: "New York" },
-    { id: "california", name: "California" },
-    { id: "texas", name: "Texas" },
-    { id: "florida", name: "Florida" },
-    { id: "illinois", name: "Illinois" },
+    { id: "pet-sitting", name: "Pet Sitting" },
+    { id: "dog-walking", name: "Dog Walking" },
   ];
 
   const services = [
     {
       id: 1,
-      name: "Happy Paws Veterinary Clinic",
-      type: "veterinary",
-      location: "New York",
-      rating: 4.9,
-      reviews: 245,
-      price: "$50-150",
-      image: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=400&h=400&fit=crop",
-      description: "Full-service veterinary clinic with emergency care available 24/7.",
-      services: ["Check-ups", "Surgery", "Emergency Care", "Vaccinations"],
-      hours: "24/7",
-      contact: { phone: "(555) 123-4567", email: "info@happypawsvet.com" },
-      verified: true
+      name: "Wellness Exam",
+      category: "veterinary",
+      price: 75.00,
+      rating: 4.7,
+      reviews: 62,
+      image: "https://images.unsplash.com/photo-1588943211345-c4c4164609d6?w=400&h=400&fit=crop",
+      description: "A comprehensive check-up to ensure your dog's optimal health.",
+      contact: "+1 (555) 123-4567",
+      location: "123 Main St, Anytown",
+      availability: "Mon-Fri, 9am-5pm",
+      isFeatured: true,
     },
     {
       id: 2,
-      name: "Pampered Paws Grooming",
-      type: "grooming",
-      location: "California",
-      rating: 4.8,
-      reviews: 189,
-      price: "$30-80",
-      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop",
-      description: "Professional grooming services with organic products and gentle care.",
-      services: ["Full Grooming", "Nail Trimming", "Teeth Cleaning", "Spa Treatments"],
-      hours: "Mon-Sat 8AM-6PM",
-      contact: { phone: "(555) 987-6543", email: "book@pamperedpaws.com" },
-      verified: true
+      name: "Basic Obedience Training",
+      category: "training",
+      price: 120.00,
+      rating: 4.9,
+      reviews: 145,
+      image: "https://images.unsplash.com/photo-1537151608828-ea2b2a5770c3?w=400&h=400&fit=crop",
+      description: "Teach your dog essential commands and improve their behavior.",
+      contact: "+1 (555) 234-5678",
+      location: "456 Elm St, Anytown",
+      availability: "Sat-Sun, 10am-2pm",
+      isFeatured: false,
     },
     {
       id: 3,
-      name: "Elite Dog Training Academy",
-      type: "training",
-      location: "Texas",
-      rating: 4.7,
-      reviews: 156,
-      price: "$40-100",
-      image: "https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=400&h=400&fit=crop",
-      description: "Expert dog training with positive reinforcement methods for all ages.",
-      services: ["Puppy Training", "Obedience", "Behavioral Issues", "Agility"],
-      hours: "Mon-Fri 9AM-7PM",
-      contact: { phone: "(555) 456-7890", email: "train@elitedogs.com" },
-      verified: true
+      name: "Full Grooming Package",
+      category: "grooming",
+      price: 60.00,
+      rating: 4.6,
+      reviews: 88,
+      image: "https://images.unsplash.com/photo-1562909492-57295e9a7652?w=400&h=400&fit=crop",
+      description: "Pamper your dog with a complete grooming session.",
+      contact: "+1 (555) 345-6789",
+      location: "789 Oak St, Anytown",
+      availability: "Tue-Sat, 8am-4pm",
+      isFeatured: false,
     },
     {
       id: 4,
-      name: "City Dog Walkers",
-      type: "walking",
-      location: "New York",
-      rating: 4.6,
-      reviews: 324,
-      price: "$20-35",
-      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
-      description: "Reliable dog walking services with GPS tracking and photo updates.",
-      services: ["Daily Walks", "Group Walks", "Pet Sitting", "Emergency Visits"],
-      hours: "7AM-8PM Daily",
-      contact: { phone: "(555) 321-0987", email: "walk@citydogs.com" },
-      verified: false
+      name: "Overnight Pet Sitting",
+      category: "pet-sitting",
+      price: 40.00,
+      rating: 4.8,
+      reviews: 112,
+      image: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop",
+      description: "Ensure your dog is safe and comfortable while you're away.",
+      contact: "+1 (555) 456-7890",
+      location: "In your home",
+      availability: "Flexible",
+      isFeatured: false,
     },
     {
       id: 5,
-      name: "Loving Care Pet Sitting",
-      type: "sitting",
-      location: "Florida",
-      rating: 4.9,
-      reviews: 134,
-      price: "$25-50",
-      image: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop",
-      description: "Professional pet sitting in your home with overnight care available.",
-      services: ["In-Home Sitting", "Overnight Care", "Pet Taxi", "Daily Updates"],
-      hours: "Available 24/7",
-      contact: { phone: "(555) 654-3210", email: "care@lovingpets.com" },
-      verified: true
+      name: "30-Minute Dog Walk",
+      category: "dog-walking",
+      price: 20.00,
+      rating: 4.5,
+      reviews: 75,
+      image: "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400&h=400&fit=crop",
+      description: "Keep your dog active and happy with a brisk walk.",
+      contact: "+1 (555) 567-8901",
+      location: "Your neighborhood",
+      availability: "Mon-Sun, 7am-7pm",
+      isFeatured: false,
     },
     {
       id: 6,
-      name: "Cozy Paws Boarding",
-      type: "boarding",
-      location: "Illinois",
+      name: "Advanced Agility Training",
+      category: "training",
+      price: 150.00,
+      rating: 4.9,
+      reviews: 95,
+      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop",
+      description: "Challenge your dog with advanced agility courses.",
+      contact: "+1 (555) 678-9012",
+      location: "123 Training Ln, Anytown",
+      availability: "Wed-Fri, 6pm-8pm",
+      isFeatured: false,
+    },
+    {
+      id: 7,
+      name: "Teeth Cleaning",
+      category: "veterinary",
+      price: 85.00,
+      rating: 4.7,
+      reviews: 54,
+      image: "https://images.unsplash.com/photo-1568558558379-389759122996?w=400&h=400&fit=crop",
+      description: "Maintain your dog's dental health with professional teeth cleaning.",
+      contact: "+1 (555) 789-0123",
+      location: "456 Vet Ave, Anytown",
+      availability: "Mon-Sat, 10am-6pm",
+      isFeatured: false,
+    },
+    {
+      id: 8,
+      name: "Deluxe Grooming & Spa Day",
+      category: "grooming",
+      price: 90.00,
+      rating: 4.8,
+      reviews: 70,
+      image: "https://images.unsplash.com/photo-1591604029355-4919191c47fa?w=400&h=400&fit=crop",
+      description: "Treat your dog to a luxurious grooming and spa experience.",
+      contact: "+1 (555) 890-1234",
+      location: "789 Spa Rd, Anytown",
+      availability: "Thu-Sun, 9am-5pm",
+      isFeatured: false,
+    },
+    {
+      id: 9,
+      name: "Extended Pet Sitting",
+      category: "pet-sitting",
+      price: 60.00,
+      rating: 4.9,
+      reviews: 102,
+      image: "https://images.unsplash.com/photo-1598550879261-2277c6760915?w=400&h=400&fit=crop",
+      description: "Provide your dog with attentive care for longer periods.",
+      contact: "+1 (555) 901-2345",
+      location: "In your home",
+      availability: "Flexible",
+      isFeatured: false,
+    },
+    {
+      id: 10,
+      name: "Group Dog Walking",
+      category: "dog-walking",
+      price: 15.00,
+      rating: 4.6,
+      reviews: 68,
+      image: "https://images.unsplash.com/photo-1560807707-8cc756ef73c1?w=400&h=400&fit=crop",
+      description: "Let your dog socialize and exercise with other dogs.",
+      contact: "+1 (555) 012-3456",
+      location: "Local parks",
+      availability: "Mon-Fri, 10am-12pm",
+      isFeatured: false,
+    },
+    {
+      id: 11,
+      name: "Emergency Veterinary Care",
+      category: "veterinary",
+      price: 150.00,
       rating: 4.5,
-      reviews: 98,
-      price: "$35-60",
-      image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=400&fit=crop",
-      description: "Home-like boarding facility with large play areas and personalized care.",
-      services: ["Day Boarding", "Overnight Boarding", "Playtime", "Special Diets"],
-      hours: "Mon-Sun 7AM-7PM",
-      contact: { phone: "(555) 789-0123", email: "stay@cozypaws.com" },
-      verified: true
-    }
+      reviews: 42,
+      image: "https://images.unsplash.com/photo-1576763159395-a9ca8141f1ca?w=400&h=400&fit=crop",
+      description: "Get immediate veterinary attention for your dog in critical situations.",
+      contact: "+1 (555) 123-4567",
+      location: "123 Main St, Anytown",
+      availability: "24/7",
+      isFeatured: false,
+    },
+    {
+      id: 12,
+      name: "Behavioral Training",
+      category: "training",
+      price: 180.00,
+      rating: 4.7,
+      reviews: 80,
+      image: "https://images.unsplash.com/photo-1591604029355-4919191c47fa?w=400&h=400&fit=crop",
+      description: "Address specific behavioral issues with expert training techniques.",
+      contact: "+1 (555) 234-5678",
+      location: "456 Elm St, Anytown",
+      availability: "Sat-Sun, 2pm-4pm",
+      isFeatured: false,
+    },
   ];
 
   const filteredServices = services.filter(service => {
-    const matchesSearch = service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         service.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesService = selectedService === "all" || service.type === selectedService;
-    const matchesLocation = selectedLocation === "all" || service.location.toLowerCase().replace(' ', '-') === selectedLocation;
-    
-    return matchesSearch && matchesService && matchesLocation;
+    const matchesSearch = service.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || service.category === selectedCategory;
+    return matchesSearch && matchesCategory;
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
@@ -153,15 +217,19 @@ const Services = () => {
               <Link to="/blog" className="text-gray-700 hover:text-orange-500 transition-colors">Blog</Link>
               <Link to="/lost-found" className="text-gray-700 hover:text-orange-500 transition-colors">Lost & Found</Link>
             </nav>
+            <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Cart (0)
+            </Button>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-12 px-4 bg-gradient-to-r from-green-500 to-blue-600 text-white">
+      <section className="py-12 px-4 bg-gradient-to-r from-orange-500 to-blue-600 text-white">
         <div className="container mx-auto text-center">
           <h2 className="text-4xl font-bold mb-4">Professional Dog Services</h2>
-          <p className="text-xl opacity-90">Find trusted professionals for all your dog's needs</p>
+          <p className="text-xl opacity-90">Find the best care for your furry friend</p>
         </div>
       </section>
 
@@ -179,28 +247,15 @@ const Services = () => {
               />
             </div>
             <div className="flex flex-wrap gap-4">
-              <Select value={selectedService} onValueChange={setSelectedService}>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-48">
                   <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Service Type" />
+                  <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {serviceTypes.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {service.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                <SelectTrigger className="w-48">
-                  <MapPin className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Location" />
-                </SelectTrigger>
-                <SelectContent>
-                  {locations.map((location) => (
-                    <SelectItem key={location.id} value={location.id}>
-                      {location.name}
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -215,99 +270,86 @@ const Services = () => {
         <div className="container mx-auto">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-2xl font-bold text-gray-800">
-              {filteredServices.length} Services Available
+              {filteredServices.length} Services Found
             </h3>
-            <Button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
-              List Your Service
-            </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredServices.map((service) => (
               <Card key={service.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                 <div className="relative">
-                  <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
-                    <img 
-                      src={service.image} 
-                      alt={service.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                  <div className="aspect-square bg-gray-100 rounded-t-lg overflow-hidden">
+                    <img
+                      src={service.image}
+                      alt={service.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  {service.verified && (
-                    <Badge className="absolute top-2 left-2 bg-green-500 hover:bg-green-600">
-                      Verified
-                    </Badge>
+
+                  {/* Featured Badge */}
+                  {service.isFeatured && (
+                    <Badge className="absolute top-2 left-2 bg-blue-500 hover:bg-blue-600">Featured</Badge>
                   )}
+
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="absolute top-2 right-2 bg-white/80 hover:bg-white p-2"
+                  >
+                    <Heart className="h-4 w-4" />
+                  </Button>
                 </div>
-                
-                <CardHeader className="pb-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg mb-1">{service.name}</CardTitle>
-                      <div className="flex items-center mb-2">
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < Math.floor(service.rating)
-                                  ? "text-yellow-400 fill-current"
-                                  : "text-gray-300"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-500 ml-2">
-                          {service.rating} ({service.reviews})
-                        </span>
-                      </div>
+
+                <CardContent className="p-4">
+                  <h4 className="font-semibold text-lg mb-2 line-clamp-2">{service.name}</h4>
+
+                  <div className="flex items-center mb-2">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < Math.floor(service.rating)
+                              ? "text-yellow-400 fill-current"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-center text-green-600 font-semibold">
-                        <DollarSign className="h-4 w-4" />
-                        <span>{service.price}</span>
-                      </div>
+                    <span className="text-sm text-gray-500 ml-2">
+                      {service.rating} ({service.reviews})
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-bold text-orange-600">
+                        ${service.price}
+                      </span>
                     </div>
                   </div>
-                </CardHeader>
-                
-                <CardContent className="pt-0">
-                  <div className="flex items-center text-gray-500 mb-3">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{service.location}</span>
-                    <Clock className="h-4 w-4 ml-4 mr-1" />
-                    <span className="text-sm">{service.hours}</span>
+
+                  <div className="text-sm text-gray-600 mb-2 line-clamp-3">{service.description}</div>
+
+                  <div className="flex items-center gap-2 text-gray-500 mb-2">
+                    <MapPin className="h-4 w-4" />
+                    {service.location}
                   </div>
 
-                  <p className="text-gray-600 text-sm mb-4">
-                    {service.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {service.services.slice(0, 3).map((serviceItem, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {serviceItem}
-                      </Badge>
-                    ))}
-                    {service.services.length > 3 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{service.services.length - 3} more
-                      </Badge>
-                    )}
+                  <div className="flex items-center gap-2 text-gray-500 mb-2">
+                    <Calendar className="h-4 w-4" />
+                    {service.availability}
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button 
-                      className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-                    >
-                      <Phone className="h-4 w-4 mr-2" />
-                      Call
-                    </Button>
-                    <Button variant="outline" className="flex-1">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Email
-                    </Button>
+                  <div className="flex items-center gap-2 text-gray-500 mb-4">
+                    <Phone className="h-4 w-4" />
+                    {service.contact}
                   </div>
+
+                  <Button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Book Now
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -315,13 +357,15 @@ const Services = () => {
 
           {filteredServices.length === 0 && (
             <div className="text-center py-12">
-              <Dog className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">No services found</h3>
               <p className="text-gray-500">Try adjusting your search filters</p>
             </div>
           )}
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
