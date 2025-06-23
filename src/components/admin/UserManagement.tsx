@@ -3,14 +3,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
+import { Tables } from "@/integrations/supabase/types";
 
-interface UserProfile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-  created_at: string;
-}
+type UserProfile = Tables<'profiles'>;
 
 export const UserManagement = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);

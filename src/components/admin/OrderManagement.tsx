@@ -3,16 +3,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart, DollarSign } from "lucide-react";
+import { Tables } from "@/integrations/supabase/types";
 
-interface CheckoutSession {
-  id: string;
-  customer_email: string;
-  customer_name: string | null;
-  total_amount: number;
-  status: string;
-  created_at: string;
-  items: any[];
-}
+type CheckoutSession = Tables<'checkout_sessions'>;
 
 export const OrderManagement = () => {
   const [orders, setOrders] = useState<CheckoutSession[]>([]);
@@ -98,11 +91,11 @@ export const OrderManagement = () => {
                     </span>
                   </div>
                 </div>
-                {order.items && order.items.length > 0 && (
+                {order.items && Array.isArray(order.items) && order.items.length > 0 && (
                   <div className="mt-2">
                     <p className="text-sm font-medium mb-1">Items:</p>
                     <ul className="text-sm text-gray-600">
-                      {order.items.map((item: any, index: number) => (
+                      {(order.items as any[]).map((item: any, index: number) => (
                         <li key={index}>
                           {item.name} x{item.quantity} - ${(item.price * item.quantity).toFixed(2)}
                         </li>

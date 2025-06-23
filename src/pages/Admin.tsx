@@ -27,14 +27,20 @@ const Admin = () => {
       }
 
       try {
+        // Check if the user has admin role using the function
         const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .single();
+          .rpc('has_role', { 
+            _user_id: user.id, 
+            _role: 'admin' 
+          });
 
-        if (error || !data) {
+        if (error) {
+          console.error('Error checking admin status:', error);
+          navigate('/');
+          return;
+        }
+
+        if (!data) {
           navigate('/');
           return;
         }
