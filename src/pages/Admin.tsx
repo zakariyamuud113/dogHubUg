@@ -3,15 +3,16 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Users, Package, Calendar, Heart, Settings, LogOut } from "lucide-react";
+import { Users, Package, Calendar, Heart, Settings, LogOut, BookOpen, Stethoscope } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ProductManagement } from "@/components/admin/ProductManagement";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { OrderManagement } from "@/components/admin/OrderManagement";
+import { ServiceManagement } from "@/components/admin/ServiceManagement";
+import { BlogManagement } from "@/components/admin/BlogManagement";
 
 const Admin = () => {
   const { user, signOut } = useAuth();
@@ -95,10 +96,18 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               Products
+            </TabsTrigger>
+            <TabsTrigger value="services" className="flex items-center gap-2">
+              <Stethoscope className="h-4 w-4" />
+              Services
+            </TabsTrigger>
+            <TabsTrigger value="blogs" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Blogs
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -118,6 +127,14 @@ const Admin = () => {
             <ProductManagement />
           </TabsContent>
 
+          <TabsContent value="services">
+            <ServiceManagement />
+          </TabsContent>
+
+          <TabsContent value="blogs">
+            <BlogManagement />
+          </TabsContent>
+
           <TabsContent value="users">
             <UserManagement />
           </TabsContent>
@@ -127,14 +144,11 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="reports">
-            <Card>
-              <CardHeader>
-                <CardTitle>Dog Reports Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Dog reports management coming soon...</p>
-              </CardContent>
-            </Card>
+            <div className="text-center py-12">
+              <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">Dog Reports Management</h3>
+              <p className="text-gray-500">Dog reports management coming soon...</p>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
