@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { DonationData, useDonations } from "@/hooks/useDonations";
 import { X, Heart } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface DonateFormProps {
   onClose: () => void;
@@ -22,10 +23,23 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
     is_anonymous: false,
   });
 
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const { processDonation, isProcessing } = useDonations();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isDemoMode) {
+      // Demo mode - simulate successful donation
+      toast({
+        title: "Demo Donation Successful!",
+        description: `Demo donation of $${formData.amount} has been processed successfully. Thank you for your support!`,
+      });
+      onClose();
+      return;
+    }
+
     const result = await processDonation(formData);
     if (result.success) {
       onClose();
@@ -54,6 +68,22 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Demo Mode Toggle */}
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="demo-mode-donate"
+                  checked={isDemoMode}
+                  onChange={(e) => setIsDemoMode(e.target.checked)}
+                  className="rounded"
+                />
+                <Label htmlFor="demo-mode-donate" className="text-blue-700 font-medium text-sm">
+                  Demo Mode (Test donation)
+                </Label>
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="amount">Donation Amount ($) *</Label>
               <div className="grid grid-cols-5 gap-2 mt-2 mb-3">
@@ -122,8 +152,12 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
               <Button type="button" variant="outline" onClick={onClose} className="flex-1">
                 Cancel
               </Button>
-              <Button type="submit" disabled={isProcessing} className="flex-1 bg-gradient-to-r from-red-500 to-pink-600">
-                {isProcessing ? 'Processing...' : `Donate $${formData.amount}`}
+              <Button 
+                type="submit" 
+                disabled={isProcessing} 
+                className={`flex-1 ${isDemoMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gradient-to-r from-red-500 to-pink-600'}`}
+              >
+                {isProcessing ? 'Processing...' : isDemoMode ? `Demo Donate $${formData.amount}` : `Donate $${formData.amount}`}
               </Button>
             </div>
           </form>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckoutData, useCheckout } from "@/hooks/useCheckout";
 import { X, CreditCard } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface CheckoutFormProps {
   items: Array<{
@@ -33,12 +34,25 @@ export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
     },
   });
 
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const { processCheckout, isProcessing } = useCheckout();
+  const { toast } = useToast();
 
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isDemoMode) {
+      // Demo mode - simulate successful checkout
+      toast({
+        title: "Demo Checkout Successful!",
+        description: `Demo order for $${total.toFixed(2)} has been processed successfully.`,
+      });
+      onClose();
+      return;
+    }
+
     const result = await processCheckout(formData);
     if (result.success) {
       onClose();
@@ -76,6 +90,22 @@ export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Demo Mode Toggle */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="demo-mode"
+                  checked={isDemoMode}
+                  onChange={(e) => setIsDemoMode(e.target.checked)}
+                  className="rounded"
+                />
+                <Label htmlFor="demo-mode" className="text-blue-700 font-medium">
+                  Demo Mode (Test checkout without payment)
+                </Label>
+              </div>
+            </div>
+
             {/* Order Summary */}
             <div>
               <h3 className="text-lg font-semibold mb-3">Order Summary</h3>
@@ -174,8 +204,12 @@ export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
               <Button type="button" variant="outline" onClick={onClose} className="flex-1">
                 Cancel
               </Button>
-              <Button type="submit" disabled={isProcessing} className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600">
-                {isProcessing ? 'Processing...' : 'Proceed to Payment'}
+              <Button 
+                type="submit" 
+                disabled={isProcessing} 
+                className={`flex-1 ${isDemoMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gradient-to-r from-orange-500 to-orange-600'}`}
+              >
+                {isProcessing ? 'Processing...' : isDemoMode ? 'Complete Demo Checkout' : 'Proceed to Payment'}
               </Button>
             </div>
           </form>
