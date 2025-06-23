@@ -9,7 +9,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any; isAdmin?: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error, data } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -84,14 +84,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: error.message,
         variant: "destructive",
       });
+      return { error };
     } else {
+      // Check if user has admin role
+      const { data: hasAdminRole } = await supabase
+        .rpc('has_role', { 
+          _user_id: data.user.id, 
+          _role: 'admin' 
+        });
+
       toast({
         title: "Welcome back!",
         description: "You have successfully signed in.",
       });
-    }
 
-    return { error };
+      return { error: null, isAdmin: hasAdminRole };
+    }
   };
 
   const signOut = async () => {
