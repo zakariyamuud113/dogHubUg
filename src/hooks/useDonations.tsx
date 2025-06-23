@@ -33,6 +33,11 @@ export const useDonations = () => {
 
         if (dbError) throw dbError;
 
+        // Send email notification
+        await supabase.functions.invoke('send-donation-notification', {
+          body: donationData
+        });
+
         toast({
           title: "Demo Donation Successful!",
           description: `Thank you for your demo donation of $${donationData.amount}!`,

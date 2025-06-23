@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ShoppingCart, Package, DollarSign, TrendingUp } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
+import { useToast } from "@/hooks/use-toast";
 
 type CheckoutSession = Tables<'checkout_sessions'>;
 
@@ -14,6 +15,7 @@ export const OrderManagement = () => {
   const [orders, setOrders] = useState<CheckoutSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchOrders();
@@ -38,6 +40,9 @@ export const OrderManagement = () => {
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+
       const { error } = await supabase
         .from('checkout_sessions')
         .update({ status: newStatus })
@@ -45,10 +50,47 @@ export const OrderManagement = () => {
 
       if (error) throw error;
       
+      // If order is being approved (completed), send confirmation email
+      if (newStatus === 'completed' && order.status !== 'completed') {
+        try {
+          await supabase.functions.invoke('send-checkout-confirmation', {
+            body: {
+              customer_email: order.customer_email,
+              customer_name: order.customer_name,
+              order_id: order.id,
+              total_amount: Number(order.total_amount),
+              items: order.items || []
+            }
+          });
+
+          toast({
+            title: "Order Updated",
+            description: "Order status updated and confirmation email sent to customer.",
+          });
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+          toast({
+            title: "Order Updated",
+            description: "Order status updated but email notification failed.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Order Updated",
+          description: "Order status has been updated successfully.",
+        });
+      }
+      
       // Refresh orders
       fetchOrders();
     } catch (error) {
       console.error('Error updating order status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update order status.",
+        variant: "destructive",
+      });
     }
   };
 

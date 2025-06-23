@@ -10,6 +10,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
+import { DonateForm } from "@/components/DonateForm";
 
 type Service = Tables<'services'>;
 
@@ -17,6 +18,7 @@ const Index = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const [services, setServices] = useState<Service[]>([]);
   const [servicesLoading, setServicesLoading] = useState(true);
+  const [showDonateForm, setShowDonateForm] = useState(false);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -68,6 +70,15 @@ const Index = () => {
                 <Heart className="h-5 w-5 mr-2" />
                 Book Services
               </Link>
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-white text-white hover:bg-white hover:text-red-500"
+              onClick={() => setShowDonateForm(true)}
+            >
+              <Heart className="h-5 w-5 mr-2" />
+              Donate Now
             </Button>
           </div>
         </div>
@@ -295,6 +306,7 @@ const Index = () => {
         </div>
       </section>
 
+      {showDonateForm && <DonateForm onClose={() => setShowDonateForm(false)} />}
       <Footer />
     </div>
   );
