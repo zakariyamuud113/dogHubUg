@@ -6,14 +6,16 @@ import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { CheckoutForm } from "@/components/CheckoutForm";
 
 const Cart = () => {
   const { cartItems, updateQuantity, removeItem, isLoading } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showCheckout, setShowCheckout] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -40,6 +42,14 @@ const Cart = () => {
   const shipping = 9.99;
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
+
+  const checkoutItems = cartItems.map(item => ({
+    id: item.product.id,
+    name: item.product.name,
+    price: item.product.price,
+    quantity: item.quantity,
+    image_url: item.product.image_url,
+  }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
@@ -147,7 +157,10 @@ const Cart = () => {
                       </div>
                     </div>
                   </div>
-                  <Button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
+                  <Button 
+                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                    onClick={() => setShowCheckout(true)}
+                  >
                     Proceed to Checkout
                   </Button>
                 </CardContent>
@@ -156,6 +169,13 @@ const Cart = () => {
           </div>
         )}
       </div>
+
+      {showCheckout && (
+        <CheckoutForm 
+          items={checkoutItems}
+          onClose={() => setShowCheckout(false)}
+        />
+      )}
 
       <Footer />
     </div>

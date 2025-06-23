@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,10 +7,12 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { DonateForm } from "@/components/DonateForm";
 
 const Index = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showDonateForm, setShowDonateForm] = useState(false);
 
   const featuredProducts = [
     { 
@@ -303,6 +304,7 @@ const Index = () => {
               size="lg" 
               variant="secondary"
               className="bg-white text-orange-600 hover:bg-gray-100"
+              onClick={() => setShowDonateForm(true)}
             >
               <Gift className="h-5 w-5 mr-2" />
               Donate Now
@@ -319,6 +321,10 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {showDonateForm && (
+        <DonateForm onClose={() => setShowDonateForm(false)} />
+      )}
 
       <Footer />
     </div>

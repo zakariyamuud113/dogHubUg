@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,11 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dog, ShoppingCart, MapPin, Calendar, Search, Heart, Phone, AlertCircle, Filter, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
+import { ReportDogForm } from "@/components/ReportDogForm";
+import { DonateForm } from "@/components/DonateForm";
 
 const LostFound = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
+  const [showReportForm, setShowReportForm] = useState<'lost' | 'found' | null>(null);
+  const [showDonateForm, setShowDonateForm] = useState(false);
 
   const locations = [
     { id: "all", name: "All Locations" },
@@ -150,10 +153,20 @@ const LostFound = () => {
           <h2 className="text-4xl font-bold mb-4">Lost & Found Dogs</h2>
           <p className="text-xl opacity-90 mb-6">Help reunite dogs with their families and find homes for those in need</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="bg-white text-red-600 hover:bg-gray-100">
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              className="bg-white text-red-600 hover:bg-gray-100"
+              onClick={() => setShowReportForm('lost')}
+            >
               Report Lost Dog
             </Button>
-            <Button size="lg" variant="secondary" className="bg-white text-red-600 hover:bg-gray-100">
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              className="bg-white text-red-600 hover:bg-gray-100"
+              onClick={() => setShowReportForm('found')}
+            >
               Report Found Dog
             </Button>
           </div>
@@ -333,12 +346,25 @@ const LostFound = () => {
             size="lg" 
             variant="secondary"
             className="bg-white text-orange-600 hover:bg-gray-100"
+            onClick={() => setShowDonateForm(true)}
           >
             <Heart className="h-5 w-5 mr-2" />
             Donate Now
           </Button>
         </div>
       </section>
+
+      {/* Modals */}
+      {showReportForm && (
+        <ReportDogForm 
+          type={showReportForm} 
+          onClose={() => setShowReportForm(null)} 
+        />
+      )}
+
+      {showDonateForm && (
+        <DonateForm onClose={() => setShowDonateForm(false)} />
+      )}
 
       {/* Footer */}
       <Footer />

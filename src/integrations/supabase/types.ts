@@ -44,6 +44,162 @@ export type Database = {
           },
         ]
       }
+      checkout_sessions: {
+        Row: {
+          created_at: string
+          currency: string | null
+          customer_email: string
+          customer_name: string | null
+          customer_phone: string | null
+          id: string
+          items: Json
+          shipping_address: Json | null
+          status: string | null
+          stripe_session_id: string | null
+          total_amount: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          customer_email: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          items: Json
+          shipping_address?: Json | null
+          status?: string | null
+          stripe_session_id?: string | null
+          total_amount: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          customer_email?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          items?: Json
+          shipping_address?: Json | null
+          status?: string | null
+          stripe_session_id?: string | null
+          total_amount?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      dog_reports: {
+        Row: {
+          age: number | null
+          breed: string | null
+          color: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          description: string | null
+          dog_name: string | null
+          gender: string | null
+          id: string
+          is_urgent: boolean | null
+          last_seen_date: string | null
+          last_seen_location: string | null
+          reward_amount: number | null
+          size: string | null
+          status: string | null
+          type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          age?: number | null
+          breed?: string | null
+          color?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at?: string
+          description?: string | null
+          dog_name?: string | null
+          gender?: string | null
+          id?: string
+          is_urgent?: boolean | null
+          last_seen_date?: string | null
+          last_seen_location?: string | null
+          reward_amount?: number | null
+          size?: string | null
+          status?: string | null
+          type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          age?: number | null
+          breed?: string | null
+          color?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          description?: string | null
+          dog_name?: string | null
+          gender?: string | null
+          id?: string
+          is_urgent?: boolean | null
+          last_seen_date?: string | null
+          last_seen_location?: string | null
+          reward_amount?: number | null
+          size?: string | null
+          status?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      donations: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string | null
+          donor_email: string
+          donor_name: string | null
+          id: string
+          is_anonymous: boolean | null
+          message: string | null
+          status: string | null
+          stripe_session_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string | null
+          donor_email: string
+          donor_name?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          message?: string | null
+          status?: string | null
+          stripe_session_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          donor_email?: string
+          donor_name?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          message?: string | null
+          status?: string | null
+          stripe_session_id?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
