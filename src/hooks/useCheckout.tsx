@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface CheckoutData {
   customer_email: string;
@@ -26,6 +27,7 @@ export interface CheckoutData {
 export const useCheckout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const processCheckout = async (checkoutData: CheckoutData, isDemoMode: boolean = false) => {
     setIsProcessing(true);
@@ -53,9 +55,31 @@ export const useCheckout = () => {
 
         if (dbError) throw dbError;
 
+        // Clear cart after successful checkout
+        if (user) {
+          await supabase
+            .from('cart_items')
+            .delete()
+            .eq('user_id', user.id);
+          
+          // Invalidate cart cache
+          queryClient.invalidateQueries({ queryKey: ['cart', user.id] });
+        }
+
+        // Send confirmation email
+        await supabase.functions.invoke('send-checkout-confirmation', {
+          body: {
+            customer_email: checkoutData.customer_email,
+            customer_name: checkoutData.customer_name,
+            order_id: `demo_${Date.now()}`,
+            total_amount,
+            items: checkoutData.items,
+          }
+        });
+
         toast({
           title: "Demo Checkout Successful!",
-          description: `Demo order for $${total_amount.toFixed(2)} has been processed successfully.`,
+          description: `Demo order for $${total_amount.toFixed(2)} has been processed successfully. Check your email for confirmation.`,
         });
 
         return { success: true, data: { demo: true } };

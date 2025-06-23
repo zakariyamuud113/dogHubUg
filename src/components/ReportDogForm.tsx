@@ -39,7 +39,7 @@ export const ReportDogForm = ({ type, onClose }: ReportDogFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await submitReport(formData);
+    const result = await submitReport(formData, dogImage);
     if (result.success) {
       onClose();
     }

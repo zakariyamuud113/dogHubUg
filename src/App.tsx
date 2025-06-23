@@ -15,6 +15,7 @@ import Marketplace from "./pages/Marketplace";
 import Services from "./pages/Services";
 import Blog from "./pages/Blog";
 import LostFound from "./pages/LostFound";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/services" element={<Services />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/lost-found" element={<LostFound />} />
+            <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

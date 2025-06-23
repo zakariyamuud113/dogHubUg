@@ -26,23 +26,46 @@ export const useDogReports = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const submitReport = async (report: DogReport) => {
+  const submitReport = async (report: DogReport, dogImage?: File | null) => {
     setIsSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
+      let image_url = null;
+
+      // Upload image if provided
+      if (dogImage) {
+        const fileExt = dogImage.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `dog-reports/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('dog-images')
+          .upload(filePath, dogImage);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('dog-images')
+            .getPublicUrl(filePath);
+          image_url = publicUrl;
+        }
+      }
+
       const { error } = await supabase
         .from('dog_reports')
         .insert({
           ...report,
           user_id: user?.id || null,
+          image_url,
         });
 
       if (error) throw error;
 
       // Send notification email
       await supabase.functions.invoke('send-dog-report-email', {
-        body: { report }
+        body: { report: { ...report, image_url } }
       });
 
       toast({
