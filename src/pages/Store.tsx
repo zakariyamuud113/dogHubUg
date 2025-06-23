@@ -1,17 +1,26 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dog, ShoppingCart, Heart, Star, Filter, Search } from "lucide-react";
+import { ShoppingCart, Heart, Star, Filter, Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useProducts } from "@/hooks/useProducts";
+import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
+import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const Store = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
+  
+  const { data: products = [], isLoading } = useProducts();
+  const { addToCart, isAddingToCart } = useCart();
+  const { user } = useAuth();
 
   const categories = [
     { id: "all", name: "All Products" },
@@ -31,165 +40,6 @@ const Store = () => {
     { id: "100+", name: "$100+" },
   ];
 
-  const products = [
-    {
-      id: 1,
-      name: "Premium Leather Collar",
-      price: 29.99,
-      originalPrice: 39.99,
-      rating: 4.8,
-      reviews: 124,
-      image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=400&fit=crop",
-      category: "accessories",
-      inStock: true,
-      isNew: false,
-      isSale: true
-    },
-    {
-      id: 2,
-      name: "Organic Chicken Treats",
-      price: 15.99,
-      originalPrice: null,
-      rating: 4.9,
-      reviews: 89,
-      image: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=400&h=400&fit=crop",
-      category: "food",
-      inStock: true,
-      isNew: true,
-      isSale: false
-    },
-    {
-      id: 3,
-      name: "Luxury Orthopedic Dog Bed",
-      price: 89.99,
-      originalPrice: 120.00,
-      rating: 4.7,
-      reviews: 67,
-      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop",
-      category: "beds",
-      inStock: true,
-      isNew: false,
-      isSale: true
-    },
-    {
-      id: 4,
-      name: "No-Pull Training Harness",
-      price: 34.99,
-      originalPrice: null,
-      rating: 4.6,
-      reviews: 156,
-      image: "https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=400&h=400&fit=crop",
-      category: "accessories",
-      inStock: true,
-      isNew: false,
-      isSale: false
-    },
-    {
-      id: 5,
-      name: "Interactive Puzzle Toy",
-      price: 22.99,
-      originalPrice: null,
-      rating: 4.5,
-      reviews: 203,
-      image: "https://images.unsplash.com/photo-1605897667897-c2ba9c2c1d5e?w=400&h=400&fit=crop",
-      category: "toys",
-      inStock: true,
-      isNew: true,
-      isSale: false
-    },
-    {
-      id: 6,
-      name: "Professional Grooming Kit",
-      price: 45.99,
-      originalPrice: 55.99,
-      rating: 4.4,
-      reviews: 78,
-      image: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=400&h=400&fit=crop",
-      category: "grooming",
-      inStock: true,
-      isNew: false,
-      isSale: true
-    },
-    {
-      id: 7,
-      name: "Stainless Steel Food Bowl Set",
-      price: 18.99,
-      originalPrice: null,
-      rating: 4.8,
-      reviews: 142,
-      image: "https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400&h=400&fit=crop",
-      category: "accessories",
-      inStock: true,
-      isNew: false,
-      isSale: false
-    },
-    {
-      id: 8,
-      name: "Grain-Free Dry Kibble",
-      price: 52.99,
-      originalPrice: 65.99,
-      rating: 4.7,
-      reviews: 234,
-      image: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=400&h=400&fit=crop",
-      category: "food",
-      inStock: true,
-      isNew: false,
-      isSale: true
-    },
-    {
-      id: 9,
-      name: "Dental Chew Treats",
-      price: 12.99,
-      originalPrice: null,
-      rating: 4.6,
-      reviews: 167,
-      image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&h=400&fit=crop",
-      category: "health",
-      inStock: true,
-      isNew: true,
-      isSale: false
-    },
-    {
-      id: 10,
-      name: "Waterproof Dog Jacket",
-      price: 38.99,
-      originalPrice: 48.99,
-      rating: 4.5,
-      reviews: 95,
-      image: "https://images.unsplash.com/photo-1605897667897-c2ba9c2c1d5e?w=400&h=400&fit=crop",
-      category: "accessories",
-      inStock: false,
-      isNew: false,
-      isSale: true
-    },
-    {
-      id: 11,
-      name: "Rope Tug Toy",
-      price: 8.99,
-      originalPrice: null,
-      rating: 4.3,
-      reviews: 312,
-      image: "https://images.unsplash.com/photo-1605897667897-c2ba9c2c1d5e?w=400&h=400&fit=crop",
-      category: "toys",
-      inStock: true,
-      isNew: false,
-      isSale: false
-    },
-    {
-      id: 12,
-      name: "Travel Dog Carrier",
-      price: 75.99,
-      originalPrice: 95.99,
-      rating: 4.7,
-      reviews: 88,
-      image: "https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=400&h=400&fit=crop",
-      category: "accessories",
-      inStock: true,
-      isNew: false,
-      isSale: true
-    }
-  ];
-
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
@@ -202,32 +52,37 @@ const Store = () => {
     return matchesSearch && matchesCategory && matchesPrice;
   });
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-lg sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center space-x-2">
-              <Dog className="h-8 w-8 text-orange-500" />
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
-                DOGHub
-              </h1>
-            </Link>
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/store" className="text-blue-500 font-semibold">Store</Link>
-              <Link to="/marketplace" className="text-gray-700 hover:text-orange-500 transition-colors">Marketplace</Link>
-              <Link to="/services" className="text-gray-700 hover:text-orange-500 transition-colors">Services</Link>
-              <Link to="/blog" className="text-gray-700 hover:text-orange-500 transition-colors">Blog</Link>
-              <Link to="/lost-found" className="text-gray-700 hover:text-orange-500 transition-colors">Lost & Found</Link>
-            </nav>
-            <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Cart (0)
-            </Button>
+  const handleAddToCart = (e: React.MouseEvent, productId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      // Redirect to login if not authenticated
+      window.location.href = '/login';
+      return;
+    }
+    
+    addToCart({ productId, quantity: 1 });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading products...</p>
           </div>
         </div>
-      </header>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
+      <Header />
 
       {/* Hero Section */}
       <section className="py-12 px-4 bg-gradient-to-r from-orange-500 to-blue-600 text-white">
@@ -282,7 +137,7 @@ const Store = () => {
       </section>
 
       {/* Products Grid */}
-      <section className="py-12 px-4">
+      <section className="py-12 px-4 flex-1">
         <div className="container mx-auto">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-2xl font-bold text-gray-800">
@@ -297,7 +152,7 @@ const Store = () => {
                   <div className="relative">
                     <div className="aspect-square bg-gray-100 rounded-t-lg overflow-hidden">
                       <img 
-                        src={product.image} 
+                        src={product.image_url || "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=400&fit=crop"} 
                         alt={product.name} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                       />
@@ -305,10 +160,10 @@ const Store = () => {
                     
                     {/* Badges */}
                     <div className="absolute top-2 left-2 flex flex-col gap-1">
-                      {product.isNew && (
+                      {product.is_new && (
                         <Badge className="bg-green-500 hover:bg-green-600">New</Badge>
                       )}
-                      {product.isSale && (
+                      {product.is_sale && (
                         <Badge className="bg-red-500 hover:bg-red-600">Sale</Badge>
                       )}
                     </div>
@@ -332,7 +187,7 @@ const Store = () => {
                           <Star
                             key={i}
                             className={`h-4 w-4 ${
-                              i < Math.floor(product.rating)
+                              i < Math.floor(product.rating || 0)
                                 ? "text-yellow-400 fill-current"
                                 : "text-gray-300"
                             }`}
@@ -340,7 +195,7 @@ const Store = () => {
                         ))}
                       </div>
                       <span className="text-sm text-gray-500 ml-2">
-                        {product.rating} ({product.reviews})
+                        {product.rating} ({product.reviews_count})
                       </span>
                     </div>
                     
@@ -349,9 +204,9 @@ const Store = () => {
                         <span className="text-xl font-bold text-orange-600">
                           ${product.price}
                         </span>
-                        {product.originalPrice && (
+                        {product.original_price && (
                           <span className="text-sm text-gray-500 line-through">
-                            ${product.originalPrice}
+                            ${product.original_price}
                           </span>
                         )}
                       </div>
@@ -359,11 +214,11 @@ const Store = () => {
                     
                     <Button 
                       className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                      disabled={!product.inStock}
-                      onClick={(e) => e.preventDefault()}
+                      disabled={!product.in_stock || isAddingToCart}
+                      onClick={(e) => handleAddToCart(e, product.id)}
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
-                      {product.inStock ? "Add to Cart" : "Out of Stock"}
+                      {product.in_stock ? "Add to Cart" : "Out of Stock"}
                     </Button>
                   </CardContent>
                 </Card>
