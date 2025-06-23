@@ -27,7 +27,7 @@ export const useCheckout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
-  const processCheckout = async (checkoutData: CheckoutData) => {
+  const processCheckout = async (checkoutData: CheckoutData, isDemoMode: boolean = false) => {
     setIsProcessing(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -36,6 +36,32 @@ export const useCheckout = () => {
         (sum, item) => sum + (item.price * item.quantity), 0
       );
 
+      if (isDemoMode) {
+        // Demo mode - simulate successful checkout without external redirect
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
+        
+        // Save demo order to database
+        const { error: dbError } = await supabase
+          .from('checkout_sessions')
+          .insert({
+            ...checkoutData,
+            user_id: user?.id || null,
+            total_amount,
+            status: 'completed',
+            stripe_session_id: `demo_${Date.now()}`,
+          });
+
+        if (dbError) throw dbError;
+
+        toast({
+          title: "Demo Checkout Successful!",
+          description: `Demo order for $${total_amount.toFixed(2)} has been processed successfully.`,
+        });
+
+        return { success: true, data: { demo: true } };
+      }
+
+      // Real checkout mode
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           ...checkoutData,

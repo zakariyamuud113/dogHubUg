@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { DonationData, useDonations } from "@/hooks/useDonations";
 import { X, Heart } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 interface DonateFormProps {
   onClose: () => void;
@@ -25,22 +24,10 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
 
   const [isDemoMode, setIsDemoMode] = useState(false);
   const { processDonation, isProcessing } = useDonations();
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isDemoMode) {
-      // Demo mode - simulate successful donation
-      toast({
-        title: "Demo Donation Successful!",
-        description: `Demo donation of $${formData.amount} has been processed successfully. Thank you for your support!`,
-      });
-      onClose();
-      return;
-    }
-
-    const result = await processDonation(formData);
+    const result = await processDonation(formData, isDemoMode);
     if (result.success) {
       onClose();
     }
@@ -50,7 +37,7 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const presetAmounts = [10, 25, 50, 100, 250];
+  const quickAmounts = [10, 25, 50, 100];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -58,7 +45,7 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="text-2xl flex items-center">
-              <Heart className="h-6 w-6 text-red-500 mr-2" />
+              <Heart className="h-6 w-6 mr-2 text-red-500" />
               Make a Donation
             </CardTitle>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -73,21 +60,21 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  id="demo-mode-donate"
+                  id="demo-mode-donation"
                   checked={isDemoMode}
                   onChange={(e) => setIsDemoMode(e.target.checked)}
                   className="rounded"
                 />
-                <Label htmlFor="demo-mode-donate" className="text-blue-700 font-medium text-sm">
-                  Demo Mode (Test donation)
+                <Label htmlFor="demo-mode-donation" className="text-blue-700 font-medium text-sm">
+                  Demo Mode (Test donation - no redirect)
                 </Label>
               </div>
             </div>
 
             <div>
               <Label htmlFor="amount">Donation Amount ($) *</Label>
-              <div className="grid grid-cols-5 gap-2 mt-2 mb-3">
-                {presetAmounts.map(amount => (
+              <div className="grid grid-cols-4 gap-2 mt-2 mb-3">
+                {quickAmounts.map(amount => (
                   <Button
                     key={amount}
                     type="button"
@@ -103,6 +90,7 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
                 id="amount"
                 type="number"
                 min="1"
+                step="0.01"
                 required
                 value={formData.amount}
                 onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
@@ -121,21 +109,12 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
             </div>
 
             <div>
-              <Label htmlFor="donor_name">Full Name</Label>
+              <Label htmlFor="donor_name">Your Name</Label>
               <Input
                 id="donor_name"
                 value={formData.donor_name}
                 onChange={(e) => handleInputChange('donor_name', e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="message">Message (Optional)</Label>
-              <Textarea
-                id="message"
-                placeholder="Share why you're supporting our cause..."
-                value={formData.message}
-                onChange={(e) => handleInputChange('message', e.target.value)}
+                disabled={formData.is_anonymous}
               />
             </div>
 
@@ -143,12 +122,27 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
               <Switch
                 id="is_anonymous"
                 checked={formData.is_anonymous}
-                onCheckedChange={(checked) => handleInputChange('is_anonymous', checked)}
+                onCheckedChange={(checked) => {
+                  handleInputChange('is_anonymous', checked);
+                  if (checked) {
+                    handleInputChange('donor_name', '');
+                  }
+                }}
               />
               <Label htmlFor="is_anonymous">Make this donation anonymous</Label>
             </div>
 
-            <div className="flex gap-4 pt-4">
+            <div>
+              <Label htmlFor="message">Message (Optional)</Label>
+              <Textarea
+                id="message"
+                placeholder="Leave a message of support..."
+                value={formData.message}
+                onChange={(e) => handleInputChange('message', e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
               <Button type="button" variant="outline" onClick={onClose} className="flex-1">
                 Cancel
               </Button>
@@ -157,7 +151,7 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
                 disabled={isProcessing} 
                 className={`flex-1 ${isDemoMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gradient-to-r from-red-500 to-pink-600'}`}
               >
-                {isProcessing ? 'Processing...' : isDemoMode ? `Demo Donate $${formData.amount}` : `Donate $${formData.amount}`}
+                {isProcessing ? 'Processing...' : isDemoMode ? 'Demo Donate' : `Donate $${formData.amount}`}
               </Button>
             </div>
           </form>

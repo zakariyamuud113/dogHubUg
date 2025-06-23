@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { ReportDogForm } from "@/components/ReportDogForm";
 import { DonateForm } from "@/components/DonateForm";
+import { supabase } from "@/integrations/supabase/client";
 
 const LostFound = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,6 +17,8 @@ const LostFound = () => {
   const [selectedType, setSelectedType] = useState("all");
   const [showReportForm, setShowReportForm] = useState<'lost' | 'found' | null>(null);
   const [showDonateForm, setShowDonateForm] = useState(false);
+  const [reports, setReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const locations = [
     { id: "all", name: "All Locations" },
@@ -30,99 +33,75 @@ const LostFound = () => {
     { id: "all", name: "All Types" },
     { id: "lost", name: "Lost Dogs" },
     { id: "found", name: "Found Dogs" },
-    { id: "adoption", name: "Available for Adoption" },
   ];
 
-  const reports = [
-    {
-      id: 1,
-      type: "lost",
-      title: "Missing Golden Retriever - Buddy",
-      breed: "Golden Retriever",
-      lastSeen: "2024-01-20",
-      location: "Central Park, New York",
-      description: "Friendly male golden retriever, 3 years old. Wearing a blue collar with name tag. Very social and responds to his name.",
-      image: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop",
-      contact: { phone: "(555) 123-4567", email: "owner@example.com", name: "Sarah Johnson" },
-      reward: 500,
-      urgent: true
-    },
-    {
-      id: 2,
-      type: "found",
-      title: "Found Small Mixed Breed",
-      breed: "Mixed Breed",
-      lastSeen: "2024-01-22",
-      location: "Downtown, California",
-      description: "Small mixed breed dog found wandering near the shopping center. No collar or ID. Very gentle and well-behaved.",
-      image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=400&fit=crop",
-      contact: { phone: "(555) 987-6543", email: "finder@example.com", name: "Mike Chen" },
-      reward: null,
-      urgent: false
-    },
-    {
-      id: 3,
-      type: "adoption",
-      title: "Luna - Sweet Husky Looking for Home",
-      breed: "Husky",
-      lastSeen: "2024-01-15",
-      location: "Animal Shelter, Texas",
-      description: "Beautiful 2-year-old husky female. Great with kids, house-trained, and loves to play. Looking for an active family.",
-      image: "https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=400&h=400&fit=crop",
-      contact: { phone: "(555) 456-7890", email: "shelter@example.com", name: "Happy Paws Shelter" },
-      reward: null,
-      urgent: false
-    },
-    {
-      id: 4,
-      type: "lost",
-      title: "Missing German Shepherd - Max",
-      breed: "German Shepherd",
-      lastSeen: "2024-01-18",
-      location: "Riverside Park, Florida",
-      description: "Large male German Shepherd, 4 years old. Black and tan coloring. May appear scared of strangers but is friendly.",
-      image: "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=400&h=400&fit=crop",
-      contact: { phone: "(555) 321-0987", email: "family@example.com", name: "The Martinez Family" },
-      reward: 1000,
-      urgent: true
-    },
-    {
-      id: 5,
-      type: "adoption",
-      title: "Charlie - Playful Labrador Mix",
-      breed: "Labrador Mix",
-      lastSeen: "2024-01-10",
-      location: "Rescue Center, Illinois",
-      description: "1-year-old Labrador mix with lots of energy. Loves fetch and swimming. Would do well with an active owner.",
-      image: "https://images.unsplash.com/photo-1518717743-49959800b1f6?w=400&h=400&fit=crop",
-      contact: { phone: "(555) 654-3210", email: "rescue@example.com", name: "Second Chance Rescue" },
-      reward: null,
-      urgent: false
-    },
-    {
-      id: 6,
-      type: "found",
-      title: "Found Senior Beagle",
-      breed: "Beagle",
-      lastSeen: "2024-01-21",
-      location: "Suburban Area, New York",
-      description: "Senior beagle found in suburban neighborhood. Appears to be well-cared for, likely has a family looking for him.",
-      image: "https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=400&fit=crop",
-      contact: { phone: "(555) 789-0123", email: "helper@example.com", name: "Jennifer Wilson" },
-      reward: null,
-      urgent: false
-    }
-  ];
+  // Fetch dog reports from database
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('dog_reports')
+          .select('*')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setReports(data || []);
+      } catch (error) {
+        console.error('Error fetching reports:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+
+    // Set up real-time subscription for new reports
+    const channel = supabase
+      .channel('dog_reports_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'dog_reports'
+        },
+        (payload) => {
+          console.log('New dog report:', payload);
+          setReports(prev => [payload.new, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const filteredReports = reports.filter(report => {
-    const matchesSearch = report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         report.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         report.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLocation = selectedLocation === "all" || report.location.toLowerCase().includes(selectedLocation.replace('-', ' '));
+    const matchesSearch = 
+      (report.dog_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (report.breed || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (report.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesLocation = selectedLocation === "all" || 
+      (report.last_seen_location || '').toLowerCase().includes(selectedLocation.replace('-', ' '));
+    
     const matchesType = selectedType === "all" || report.type === selectedType;
     
     return matchesSearch && matchesLocation && matchesType;
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <Dog className="h-16 w-16 text-orange-500 mx-auto mb-4 animate-pulse" />
+          <p className="text-lg text-gray-600">Loading reports...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
@@ -244,11 +223,17 @@ const LostFound = () => {
               <Card key={report.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                 <div className="relative">
                   <div className="aspect-square bg-gray-100 rounded-t-lg overflow-hidden">
-                    <img 
-                      src={report.image} 
-                      alt={report.title} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                    />
+                    {report.image_url ? (
+                      <img 
+                        src={report.image_url} 
+                        alt={report.dog_name || 'Dog'} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                        <Dog className="h-16 w-16 text-gray-400" />
+                      </div>
+                    )}
                   </div>
                   
                   <div className="absolute top-2 left-2 flex flex-col gap-1">
@@ -256,39 +241,39 @@ const LostFound = () => {
                       className={`${
                         report.type === 'lost' 
                           ? 'bg-red-500 hover:bg-red-600' 
-                          : report.type === 'found'
-                          ? 'bg-blue-500 hover:bg-blue-600'
-                          : 'bg-green-500 hover:bg-green-600'
+                          : 'bg-blue-500 hover:bg-blue-600'
                       }`}
                     >
-                      {report.type === 'lost' ? 'Lost' : report.type === 'found' ? 'Found' : 'Adoption'}
+                      {report.type === 'lost' ? 'Lost' : 'Found'}
                     </Badge>
-                    {report.urgent && (
+                    {report.is_urgent && (
                       <Badge className="bg-yellow-500 hover:bg-yellow-600">
                         Urgent
                       </Badge>
                     )}
                   </div>
 
-                  {report.reward && (
+                  {report.reward_amount > 0 && (
                     <Badge className="absolute top-2 right-2 bg-green-600 hover:bg-green-700">
-                      ${report.reward} Reward
+                      ${report.reward_amount} Reward
                     </Badge>
                   )}
                 </div>
                 
                 <CardHeader>
-                  <CardTitle className="text-lg">{report.title}</CardTitle>
+                  <CardTitle className="text-lg">
+                    {report.dog_name ? `${report.dog_name} - ${report.breed || 'Unknown Breed'}` : report.breed || 'Unknown Breed'}
+                  </CardTitle>
                   <div className="space-y-2">
                     <div className="flex items-center text-gray-500 text-sm">
                       <MapPin className="h-4 w-4 mr-1" />
-                      <span>{report.location}</span>
+                      <span>{report.last_seen_location || 'Location not specified'}</span>
                     </div>
                     <div className="flex items-center text-gray-500 text-sm">
                       <Calendar className="h-4 w-4 mr-1" />
                       <span>
-                        {report.type === 'lost' ? 'Last seen: ' : report.type === 'found' ? 'Found on: ' : 'Available since: '}
-                        {new Date(report.lastSeen).toLocaleDateString()}
+                        {report.type === 'lost' ? 'Last seen: ' : 'Found on: '}
+                        {report.last_seen_date ? new Date(report.last_seen_date).toLocaleDateString() : 'Date not specified'}
                       </span>
                     </div>
                   </div>
@@ -296,11 +281,11 @@ const LostFound = () => {
                 
                 <CardContent>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {report.description}
+                    {report.description || 'No description provided.'}
                   </p>
 
                   <div className="mb-4">
-                    <p className="text-sm text-gray-500 mb-1">Contact: {report.contact.name}</p>
+                    <p className="text-sm text-gray-500 mb-1">Contact: {report.contact_name}</p>
                   </div>
 
                   <div className="flex gap-2">
@@ -308,15 +293,18 @@ const LostFound = () => {
                       className={`flex-1 ${
                         report.type === 'lost' 
                           ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
-                          : report.type === 'found'
-                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
-                          : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                          : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
                       }`}
+                      onClick={() => window.location.href = `tel:${report.contact_phone}`}
                     >
                       <Phone className="h-4 w-4 mr-2" />
                       Call
                     </Button>
-                    <Button variant="outline" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => window.location.href = `mailto:${report.contact_email}`}
+                    >
                       <Mail className="h-4 w-4 mr-2" />
                       Email
                     </Button>
@@ -330,7 +318,7 @@ const LostFound = () => {
             <div className="text-center py-12">
               <Dog className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">No reports found</h3>
-              <p className="text-gray-500">Try adjusting your search filters</p>
+              <p className="text-gray-500">Try adjusting your search filters or be the first to report!</p>
             </div>
           )}
         </div>

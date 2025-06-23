@@ -15,9 +15,33 @@ export const useDonations = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
-  const processDonation = async (donationData: DonationData) => {
+  const processDonation = async (donationData: DonationData, isDemoMode: boolean = false) => {
     setIsProcessing(true);
     try {
+      if (isDemoMode) {
+        // Demo mode - simulate successful donation without external redirect
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
+        
+        // Save demo donation to database
+        const { error: dbError } = await supabase
+          .from('donations')
+          .insert({
+            ...donationData,
+            status: 'completed',
+            stripe_session_id: `demo_donation_${Date.now()}`,
+          });
+
+        if (dbError) throw dbError;
+
+        toast({
+          title: "Demo Donation Successful!",
+          description: `Thank you for your demo donation of $${donationData.amount}!`,
+        });
+
+        return { success: true, data: { demo: true } };
+      }
+
+      // Real donation mode
       const { data, error } = await supabase.functions.invoke('create-donation-session', {
         body: donationData
       });
@@ -27,7 +51,7 @@ export const useDonations = () => {
       if (data?.url) {
         window.open(data.url, '_blank');
         toast({
-          title: "Redirecting to donation",
+          title: "Redirecting to donation page",
           description: "Opening donation checkout in a new tab...",
         });
       }

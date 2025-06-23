@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckoutData, useCheckout } from "@/hooks/useCheckout";
 import { X, CreditCard } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 interface CheckoutFormProps {
   items: Array<{
@@ -36,24 +35,13 @@ export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
 
   const [isDemoMode, setIsDemoMode] = useState(false);
   const { processCheckout, isProcessing } = useCheckout();
-  const { toast } = useToast();
 
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isDemoMode) {
-      // Demo mode - simulate successful checkout
-      toast({
-        title: "Demo Checkout Successful!",
-        description: `Demo order for $${total.toFixed(2)} has been processed successfully.`,
-      });
-      onClose();
-      return;
-    }
-
-    const result = await processCheckout(formData);
+    const result = await processCheckout(formData, isDemoMode);
     if (result.success) {
       onClose();
     }
@@ -101,7 +89,7 @@ export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
                   className="rounded"
                 />
                 <Label htmlFor="demo-mode" className="text-blue-700 font-medium">
-                  Demo Mode (Test checkout without payment)
+                  Demo Mode (Test checkout without payment - no redirect)
                 </Label>
               </div>
             </div>
