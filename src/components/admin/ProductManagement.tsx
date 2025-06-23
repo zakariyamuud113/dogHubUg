@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Package } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface ProductForm {
@@ -24,12 +24,23 @@ interface ProductForm {
   is_sale: boolean;
 }
 
+const categories = [
+  "Food & Treats",
+  "Toys & Entertainment", 
+  "Health & Wellness",
+  "Training & Behavior",
+  "Grooming & Care",
+  "Accessories",
+  "Beds & Furniture"
+];
+
 export const ProductManagement = () => {
   const { data: products, isLoading } = useProducts();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [formData, setFormData] = useState<ProductForm>({
     name: '',
     description: '',
@@ -41,6 +52,21 @@ export const ProductManagement = () => {
     is_new: false,
     is_sale: false,
   });
+
+  const filteredProducts = products?.filter(product => 
+    selectedCategory === "all" || product.category === selectedCategory
+  ) || [];
+
+  const getProductsByCategory = () => {
+    const grouped: { [key: string]: any[] } = {};
+    products?.forEach(product => {
+      if (!grouped[product.category]) {
+        grouped[product.category] = [];
+      }
+      grouped[product.category].push(product);
+    });
+    return grouped;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,16 +157,36 @@ export const ProductManagement = () => {
     return <div>Loading products...</div>;
   }
 
+  const productsByCategory = getProductsByCategory();
+
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Package className="h-6 w-6" />
+          <h2 className="text-2xl font-bold">Products Management</h2>
+        </div>
+        <Button onClick={() => setShowForm(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Product
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>Product Management</CardTitle>
-            <Button onClick={() => setShowForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Product
-            </Button>
+            <CardTitle>Product Categories</CardTitle>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>
@@ -158,12 +204,19 @@ export const ProductManagement = () => {
                 </div>
                 <div>
                   <Label htmlFor="category">Category</Label>
-                  <Input
-                    id="category"
+                  <Select
                     value={formData.category}
-                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                    required
-                  />
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               
@@ -247,32 +300,73 @@ export const ProductManagement = () => {
             </form>
           )}
           
-          <div className="space-y-4">
-            {products?.map((product) => (
-              <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <img
-                    src={product.image_url || "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=100&h=100&fit=crop"}
-                    alt={product.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
-                  <div>
-                    <h3 className="font-semibold">{product.name}</h3>
-                    <p className="text-sm text-gray-600">{product.category}</p>
-                    <p className="text-sm font-medium">${product.price}</p>
+          {selectedCategory === "all" ? (
+            <div className="space-y-6">
+              {Object.entries(productsByCategory).map(([category, categoryProducts]) => (
+                <div key={category} className="space-y-4">
+                  <h3 className="text-lg font-semibold border-b pb-2">{category} ({categoryProducts.length})</h3>
+                  <div className="grid gap-4">
+                    {categoryProducts.map((product) => (
+                      <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <img
+                            src={product.image_url || "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=100&h=100&fit=crop"}
+                            alt={product.name}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                          <div>
+                            <h4 className="font-semibold">{product.name}</h4>
+                            <p className="text-sm text-gray-600">{product.category}</p>
+                            <p className="text-sm font-medium">${product.price}</p>
+                            <div className="flex gap-2 mt-1">
+                              {product.is_new && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">New</span>}
+                              {product.is_sale && <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Sale</span>}
+                              {!product.in_stock && <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded">Out of Stock</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => handleEdit(product)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={() => handleEdit(product)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredProducts.map((product) => (
+                <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <img
+                      src={product.image_url || "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=100&h=100&fit=crop"}
+                      alt={product.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                    <div>
+                      <h3 className="font-semibold">{product.name}</h3>
+                      <p className="text-sm text-gray-600">{product.category}</p>
+                      <p className="text-sm font-medium">${product.price}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => handleEdit(product)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

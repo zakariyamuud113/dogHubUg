@@ -21,7 +21,7 @@ export const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // Fetch users with their order statistics
+        // Fetch ALL users from profiles table
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*')
@@ -35,7 +35,10 @@ export const UserManagement = () => {
           .select('user_id, total_amount, status')
           .not('user_id', 'is', null);
 
-        if (orderError) throw orderError;
+        if (orderError) {
+          console.error('Error fetching order stats:', orderError);
+          // Continue without order stats if there's an error
+        }
 
         // Combine user data with order statistics
         const usersWithStats = profiles?.map(profile => {
@@ -125,7 +128,7 @@ export const UserManagement = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>User Management</CardTitle>
+          <CardTitle>User Management - All Registered Users</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>

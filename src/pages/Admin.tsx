@@ -13,6 +13,7 @@ import { UserManagement } from "@/components/admin/UserManagement";
 import { OrderManagement } from "@/components/admin/OrderManagement";
 import { ServiceManagement } from "@/components/admin/ServiceManagement";
 import { BlogManagement } from "@/components/admin/BlogManagement";
+import { ReportsManagement } from "@/components/admin/ReportsManagement";
 
 const Admin = () => {
   const { user, signOut } = useAuth();
@@ -144,11 +145,7 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="reports">
-            <div className="text-center py-12">
-              <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">Dog Reports Management</h3>
-              <p className="text-gray-500">Dog reports management coming soon...</p>
-            </div>
+            <ReportsManagement />
           </TabsContent>
         </Tabs>
       </div>
