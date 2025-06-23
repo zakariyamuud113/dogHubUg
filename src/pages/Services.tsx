@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dog, ShoppingCart, MapPin, Star, Phone, Calendar, Filter, Search, Stethoscope, Scissors, User, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import BookingForm from "@/components/BookingForm";
 
 const Services = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -200,30 +202,7 @@ const Services = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-lg sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center space-x-2">
-              <Dog className="h-8 w-8 text-orange-500" />
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
-                DOGHub
-              </h1>
-            </Link>
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/store" className="text-gray-700 hover:text-orange-500 transition-colors">Store</Link>
-              <Link to="/marketplace" className="text-gray-700 hover:text-orange-500 transition-colors">Marketplace</Link>
-              <Link to="/services" className="text-blue-500 font-semibold">Services</Link>
-              <Link to="/blog" className="text-gray-700 hover:text-orange-500 transition-colors">Blog</Link>
-              <Link to="/lost-found" className="text-gray-700 hover:text-orange-500 transition-colors">Lost & Found</Link>
-            </nav>
-            <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Cart (0)
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="py-12 px-4 bg-gradient-to-r from-orange-500 to-blue-600 text-white">
@@ -346,10 +325,12 @@ const Services = () => {
                     {service.contact}
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Book Now
-                  </Button>
+                  <BookingForm
+                    itemName={service.name}
+                    itemType="service"
+                    price={service.price}
+                    contact={service.contact}
+                  />
                 </CardContent>
               </Card>
             ))}

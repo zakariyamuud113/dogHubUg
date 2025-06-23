@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dog, ShoppingCart, Heart, MapPin, Calendar, Filter, Search, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import BookingForm from "@/components/BookingForm";
 
 const Marketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -217,30 +218,7 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-lg sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center space-x-2">
-              <Dog className="h-8 w-8 text-orange-500" />
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
-                DOGHub
-              </h1>
-            </Link>
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/store" className="text-gray-700 hover:text-orange-500 transition-colors">Store</Link>
-              <Link to="/marketplace" className="text-blue-500 font-semibold">Marketplace</Link>
-              <Link to="/services" className="text-gray-700 hover:text-orange-500 transition-colors">Services</Link>
-              <Link to="/blog" className="text-gray-700 hover:text-orange-500 transition-colors">Blog</Link>
-              <Link to="/lost-found" className="text-gray-700 hover:text-orange-500 transition-colors">Lost & Found</Link>
-            </nav>
-            <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Cart (0)
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="py-12 px-4 bg-gradient-to-r from-orange-500 to-blue-600 text-white">
@@ -368,13 +346,14 @@ const Marketplace = () => {
                     </div>
                   </div>
 
-                  <Button
-                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                    disabled={!dog.available}
-                  >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    {dog.available ? "Book Now" : "Not Available"}
-                  </Button>
+                  <BookingForm
+                    itemName={dog.name}
+                    itemType="marketplace"
+                    price={dog.price}
+                    contact={dog.contact}
+                    buttonText={dog.available ? "Book Now" : "Not Available"}
+                    buttonClassName={`w-full ${dog.available ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                  />
                 </CardContent>
               </Card>
             ))}
