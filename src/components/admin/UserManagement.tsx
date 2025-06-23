@@ -21,13 +21,18 @@ export const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // Fetch ALL users from profiles table
+        // Fetch ALL users from profiles table without any filters
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (profilesError) throw profilesError;
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+          throw profilesError;
+        }
+
+        console.log('Fetched profiles:', profiles);
 
         // Fetch order statistics for each user
         const { data: orderStats, error: orderError } = await supabase
@@ -40,6 +45,8 @@ export const UserManagement = () => {
           // Continue without order stats if there's an error
         }
 
+        console.log('Fetched order stats:', orderStats);
+
         // Combine user data with order statistics
         const usersWithStats = profiles?.map(profile => {
           const userOrders = orderStats?.filter(order => order.user_id === profile.id) || [];
@@ -51,6 +58,8 @@ export const UserManagement = () => {
             total_spent: completedOrders.reduce((sum, order) => sum + Number(order.total_amount), 0)
           };
         }) || [];
+        
+        console.log('Users with stats:', usersWithStats);
         
         setUsers(usersWithStats);
         setTotalUsers(profiles?.length || 0);
