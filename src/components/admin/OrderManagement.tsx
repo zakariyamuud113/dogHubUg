@@ -5,43 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShoppingCart, Package, DollarSign, TrendingUp, Eye } from "lucide-react";
+import { ShoppingCart, Package, DollarSign, TrendingUp } from "lucide-react";
+import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
-interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image_url?: string;
-}
-
-interface OrderData {
-  id: string;
-  user_id: string;
-  total_amount: number;
-  status: string;
-  shipping_address: any;
-  created_at: string;
-  updated_at: string;
-  profiles?: {
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-  } | null;
-}
+type CheckoutSession = Tables<'checkout_sessions'>;
 
 export const OrderManagement = () => {
-  const [orders, setOrders] = useState<OrderData[]>([]);
+  const [orders, setOrders] = useState<CheckoutSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const { toast } = useToast();
@@ -52,51 +23,17 @@ export const OrderManagement = () => {
 
   const fetchOrders = async () => {
     try {
-      console.log('Fetching all orders from orders table...');
-
-      // First fetch orders
-      const { data: ordersData, error: ordersError } = await supabase
-        .from('orders')
+      const { data, error } = await supabase
+        .from('checkout_sessions')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (ordersError) {
-        console.error('Error fetching orders:', ordersError);
-        throw ordersError;
-      }
-
-      console.log('Fetched orders:', ordersData);
-
-      // Then fetch profile information for each order with a user_id
-      const ordersWithProfiles = await Promise.all(
-        (ordersData || []).map(async (order) => {
-          if (order.user_id) {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('first_name, last_name, email')
-              .eq('id', order.user_id)
-              .single();
-            
-            return {
-              ...order,
-              profiles: profileData
-            };
-          }
-          return {
-            ...order,
-            profiles: null
-          };
-        })
-      );
-
-      setOrders(ordersWithProfiles);
+      if (error) throw error;
+      
+      console.log('Fetched orders:', data);
+      setOrders(data || []);
     } catch (error) {
-      console.error('Error in fetchOrders:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch orders.",
-        variant: "destructive",
-      });
+      console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
     }
@@ -104,17 +41,47 @@ export const OrderManagement = () => {
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+
       const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .from('checkout_sessions')
+        .update({ status: newStatus })
         .eq('id', orderId);
 
       if (error) throw error;
       
-      toast({
-        title: "Order Updated",
-        description: "Order status has been updated successfully.",
-      });
+      // If order is being approved (completed), send confirmation email
+      if (newStatus === 'completed' && order.status !== 'completed') {
+        try {
+          await supabase.functions.invoke('send-checkout-confirmation', {
+            body: {
+              customer_email: order.customer_email,
+              customer_name: order.customer_name,
+              order_id: order.id,
+              total_amount: Number(order.total_amount),
+              items: order.items || []
+            }
+          });
+
+          toast({
+            title: "Order Updated",
+            description: "Order status updated and confirmation email sent to customer.",
+          });
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+          toast({
+            title: "Order Updated",
+            description: "Order status updated but email notification failed.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Order Updated",
+          description: "Order status has been updated successfully.",
+        });
+      }
       
       // Refresh orders
       fetchOrders();
@@ -148,34 +115,8 @@ export const OrderManagement = () => {
     }
   };
 
-  const formatOrderItems = (items: any): OrderItem[] => {
-    if (!items) return [];
-    if (Array.isArray(items)) return items;
-    try {
-      return typeof items === 'string' ? JSON.parse(items) : items;
-    } catch {
-      return [];
-    }
-  };
-
-  const getCustomerDisplayName = (order: OrderData): string => {
-    if (order.profiles?.first_name || order.profiles?.last_name) {
-      return `${order.profiles.first_name || ''} ${order.profiles.last_name || ''}`.trim();
-    }
-    return 'Guest Customer';
-  };
-
-  const getCustomerEmail = (order: OrderData): string => {
-    return order.profiles?.email || 'No email available';
-  };
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-        <span className="ml-2">Loading orders...</span>
-      </div>
-    );
+    return <div>Loading orders...</div>;
   }
 
   return (
@@ -188,9 +129,6 @@ export const OrderManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{orders.length}</div>
-            <p className="text-xs text-muted-foreground">
-              All time orders
-            </p>
           </CardContent>
         </Card>
 
@@ -201,9 +139,6 @@ export const OrderManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingOrders}</div>
-            <p className="text-xs text-muted-foreground">
-              Need processing
-            </p>
           </CardContent>
         </Card>
 
@@ -214,9 +149,6 @@ export const OrderManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              From completed orders
-            </p>
           </CardContent>
         </Card>
 
@@ -227,9 +159,6 @@ export const OrderManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{completedOrders}</div>
-            <p className="text-xs text-muted-foreground">
-              Successfully processed
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -237,7 +166,7 @@ export const OrderManagement = () => {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>Orders Management ({filteredOrders.length} orders)</CardTitle>
+            <CardTitle>Orders Management</CardTitle>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Filter by status" />
@@ -252,56 +181,56 @@ export const OrderManagement = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {filteredOrders.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredOrders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-mono text-sm">
+                    {order.id.slice(0, 8)}...
+                  </TableCell>
+                  <TableCell>{order.customer_name || 'N/A'}</TableCell>
+                  <TableCell>{order.customer_email}</TableCell>
+                  <TableCell>${Number(order.total_amount).toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(order.status)}>
+                      {order.status || 'pending'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={order.status || 'pending'}
+                      onValueChange={(value) => updateOrderStatus(order.id, value)}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-sm">
-                      {order.id.slice(0, 8)}...
-                    </TableCell>
-                    <TableCell>{getCustomerDisplayName(order)}</TableCell>
-                    <TableCell>{getCustomerEmail(order)}</TableCell>
-                    <TableCell>${Number(order.total_amount).toFixed(2)}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(order.status)}>
-                        {order.status || 'pending'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={order.status || 'pending'}
-                        onValueChange={(value) => updateOrderStatus(order.id, value)}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
+              ))}
+            </TableBody>
+          </Table>
+
+          {filteredOrders.length === 0 && (
             <div className="text-center py-8">
               <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">No orders found</h3>

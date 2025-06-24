@@ -21,7 +21,19 @@ export const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        console.log('Fetching all users and their data...');
+        // Get authenticated users count
+        const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
+        
+        if (authError) {
+          console.error('Error fetching auth users:', authError);
+          // Fallback to profiles count
+          const { count: profilesCount } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true });
+          setTotalUsers(profilesCount || 0);
+        } else {
+          setTotalUsers(authData.users.length);
+        }
 
         // Fetch ALL users from profiles table
         const { data: profiles, error: profilesError } = await supabase
@@ -31,25 +43,14 @@ export const UserManagement = () => {
 
         if (profilesError) {
           console.error('Error fetching profiles:', profilesError);
-          setLoading(false);
-          return;
+          throw profilesError;
         }
 
         console.log('Fetched profiles:', profiles);
-        
-        if (!profiles) {
-          setUsers([]);
-          setTotalUsers(0);
-          setLoading(false);
-          return;
-        }
 
-        // Set total users count
-        setTotalUsers(profiles.length);
-
-        // Fetch order statistics from the orders table
+        // Fetch order statistics for each user
         const { data: orderStats, error: orderError } = await supabase
-          .from('orders')
+          .from('checkout_sessions')
           .select('user_id, total_amount, status')
           .not('user_id', 'is', null);
 
@@ -57,25 +58,25 @@ export const UserManagement = () => {
           console.error('Error fetching order stats:', orderError);
         }
 
-        console.log('Fetched order stats from orders table:', orderStats);
+        console.log('Fetched order stats:', orderStats);
 
         // Combine user data with order statistics
-        const usersWithStats = profiles.map(profile => {
+        const usersWithStats = profiles?.map(profile => {
           const userOrders = orderStats?.filter(order => order.user_id === profile.id) || [];
           const completedOrders = userOrders.filter(order => order.status === 'completed');
           
           return {
             ...profile,
             order_count: userOrders.length,
-            total_spent: completedOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0)
+            total_spent: completedOrders.reduce((sum, order) => sum + Number(order.total_amount), 0)
           };
-        });
+        }) || [];
         
         console.log('Users with stats:', usersWithStats);
         
         setUsers(usersWithStats);
       } catch (error) {
-        console.error('Error in fetchUsers:', error);
+        console.error('Error fetching users:', error);
       } finally {
         setLoading(false);
       }
@@ -88,12 +89,7 @@ export const UserManagement = () => {
   const totalRevenue = users.reduce((sum, user) => sum + (user.total_spent || 0), 0);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-        <span className="ml-2">Loading users...</span>
-      </div>
-    );
+    return <div>Loading users...</div>;
   }
 
   return (
@@ -106,9 +102,6 @@ export const UserManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalUsers}</div>
-            <p className="text-xs text-muted-foreground">
-              Registered users
-            </p>
           </CardContent>
         </Card>
 
@@ -156,56 +149,56 @@ export const UserManagement = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>User Management - All Registered Users ({totalUsers})</CardTitle>
+          <CardTitle>User Management - All Registered Users</CardTitle>
         </CardHeader>
         <CardContent>
-          {users.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Orders</TableHead>
-                  <TableHead>Total Spent</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead>Status</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Orders</TableHead>
+                <TableHead>Total Spent</TableHead>
+                <TableHead>Joined</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>
+                    {user.first_name || user.last_name 
+                      ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                      : 'No name provided'
+                    }
+                  </TableCell>
+                  <TableCell>{user.email || 'No email'}</TableCell>
+                  <TableCell>
+                    <span className="font-medium">{user.order_count || 0}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-medium">
+                      ${(user.total_spent || 0).toFixed(2)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      (user.order_count || 0) > 0 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {(user.order_count || 0) > 0 ? 'Active' : 'Inactive'}
+                    </span>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      {user.first_name || user.last_name 
-                        ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
-                        : 'No name provided'
-                      }
-                    </TableCell>
-                    <TableCell>{user.email || 'No email'}</TableCell>
-                    <TableCell>
-                      <span className="font-medium">{user.order_count || 0}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-medium">
-                        ${(user.total_spent || 0).toFixed(2)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        (user.order_count || 0) > 0 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {(user.order_count || 0) > 0 ? 'Active' : 'Inactive'}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
+              ))}
+            </TableBody>
+          </Table>
+
+          {users.length === 0 && (
             <div className="text-center py-8">
               <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">No users found</h3>
