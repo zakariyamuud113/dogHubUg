@@ -42,15 +42,18 @@ export const useCheckout = () => {
         // Demo mode - simulate successful checkout without external redirect
         await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
         
-        // Save demo order to database
+        // Save demo order to the orders table
         const { error: dbError } = await supabase
-          .from('checkout_sessions')
+          .from('orders')
           .insert({
-            ...checkoutData,
             user_id: user?.id || null,
+            customer_name: checkoutData.customer_name,
+            customer_email: checkoutData.customer_email,
+            customer_phone: checkoutData.customer_phone,
             total_amount,
             status: 'completed',
-            stripe_session_id: `demo_${Date.now()}`,
+            items: checkoutData.items,
+            shipping_address: checkoutData.shipping_address,
           });
 
         if (dbError) throw dbError;
@@ -85,12 +88,31 @@ export const useCheckout = () => {
         return { success: true, data: { demo: true } };
       }
 
-      // Real checkout mode
+      // Real checkout mode - save to orders table first
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user?.id || null,
+          customer_name: checkoutData.customer_name,
+          customer_email: checkoutData.customer_email,
+          customer_phone: checkoutData.customer_phone,
+          total_amount,
+          status: 'pending',
+          items: checkoutData.items,
+          shipping_address: checkoutData.shipping_address,
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create Stripe checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           ...checkoutData,
           user_id: user?.id || null,
           total_amount,
+          order_id: orderData.id,
         }
       });
 

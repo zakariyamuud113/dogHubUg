@@ -23,7 +23,7 @@ export const UserManagement = () => {
       try {
         console.log('Fetching all users and their data...');
 
-        // Fetch ALL users from profiles table - this is our source of truth
+        // Fetch ALL users from profiles table
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*')
@@ -47,9 +47,9 @@ export const UserManagement = () => {
         // Set total users count
         setTotalUsers(profiles.length);
 
-        // Fetch order statistics for each user
+        // Fetch order statistics from the orders table
         const { data: orderStats, error: orderError } = await supabase
-          .from('checkout_sessions')
+          .from('orders')
           .select('user_id, total_amount, status')
           .not('user_id', 'is', null);
 
@@ -57,7 +57,7 @@ export const UserManagement = () => {
           console.error('Error fetching order stats:', orderError);
         }
 
-        console.log('Fetched order stats:', orderStats);
+        console.log('Fetched order stats from orders table:', orderStats);
 
         // Combine user data with order statistics
         const usersWithStats = profiles.map(profile => {

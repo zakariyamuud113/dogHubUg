@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-type CheckoutSession = Tables<'checkout_sessions'>;
+type Order = Tables<'orders'>;
 
 interface OrderItem {
   id: string;
@@ -28,7 +27,7 @@ interface OrderItem {
   image_url?: string;
 }
 
-interface ExtendedCheckoutSession extends CheckoutSession {
+interface ExtendedOrder extends Order {
   profile?: {
     first_name: string | null;
     last_name: string | null;
@@ -37,7 +36,7 @@ interface ExtendedCheckoutSession extends CheckoutSession {
 }
 
 export const OrderManagement = () => {
-  const [orders, setOrders] = useState<ExtendedCheckoutSession[]>([]);
+  const [orders, setOrders] = useState<ExtendedOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const { toast } = useToast();
@@ -48,11 +47,11 @@ export const OrderManagement = () => {
 
   const fetchOrders = async () => {
     try {
-      console.log('Fetching all orders...');
+      console.log('Fetching all orders from orders table...');
 
       // Fetch orders with profile information
       const { data: ordersData, error } = await supabase
-        .from('checkout_sessions')
+        .from('orders')
         .select(`
           *,
           profiles:user_id (
@@ -84,47 +83,17 @@ export const OrderManagement = () => {
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
-      const order = orders.find(o => o.id === orderId);
-      if (!order) return;
-
       const { error } = await supabase
-        .from('checkout_sessions')
-        .update({ status: newStatus })
+        .from('orders')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', orderId);
 
       if (error) throw error;
       
-      // If order is being approved (completed), send confirmation email
-      if (newStatus === 'completed' && order.status !== 'completed') {
-        try {
-          await supabase.functions.invoke('send-checkout-confirmation', {
-            body: {
-              customer_email: order.customer_email,
-              customer_name: order.customer_name,
-              order_id: order.id,
-              total_amount: Number(order.total_amount),
-              items: order.items || []
-            }
-          });
-
-          toast({
-            title: "Order Updated",
-            description: "Order status updated and confirmation email sent to customer.",
-          });
-        } catch (emailError) {
-          console.error('Error sending confirmation email:', emailError);
-          toast({
-            title: "Order Updated",
-            description: "Order status updated but email notification failed.",
-            variant: "destructive",
-          });
-        }
-      } else {
-        toast({
-          title: "Order Updated",
-          description: "Order status has been updated successfully.",
-        });
-      }
+      toast({
+        title: "Order Updated",
+        description: "Order status has been updated successfully.",
+      });
       
       // Refresh orders
       fetchOrders();
@@ -162,20 +131,20 @@ export const OrderManagement = () => {
     if (!items) return [];
     if (Array.isArray(items)) return items;
     try {
-      return Array.isArray(items) ? items : [];
+      return typeof items === 'string' ? JSON.parse(items) : items;
     } catch {
       return [];
     }
   };
 
-  const getCustomerDisplayName = (order: ExtendedCheckoutSession): string => {
+  const getCustomerDisplayName = (order: ExtendedOrder): string => {
     if (order.profile?.first_name || order.profile?.last_name) {
       return `${order.profile.first_name || ''} ${order.profile.last_name || ''}`.trim();
     }
     return order.customer_name || 'Guest Customer';
   };
 
-  const getCustomerEmail = (order: ExtendedCheckoutSession): string => {
+  const getCustomerEmail = (order: ExtendedOrder): string => {
     return order.profile?.email || order.customer_email || 'No email';
   };
 
