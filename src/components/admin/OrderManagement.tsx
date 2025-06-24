@@ -27,13 +27,9 @@ interface OrderItem {
 
 interface OrderData {
   id: string;
-  user_id: string | null;
-  customer_name: string | null;
-  customer_email: string;
-  customer_phone: string | null;
+  user_id: string;
   total_amount: number;
   status: string;
-  items: any;
   shipping_address: any;
   created_at: string;
   updated_at: string;
@@ -166,11 +162,11 @@ export const OrderManagement = () => {
     if (order.profiles?.first_name || order.profiles?.last_name) {
       return `${order.profiles.first_name || ''} ${order.profiles.last_name || ''}`.trim();
     }
-    return order.customer_name || 'Guest Customer';
+    return 'Guest Customer';
   };
 
   const getCustomerEmail = (order: OrderData): string => {
-    return order.profiles?.email || order.customer_email || 'No email';
+    return order.profiles?.email || 'No email available';
   };
 
   if (loading) {
@@ -263,7 +259,6 @@ export const OrderManagement = () => {
                   <TableHead>Order ID</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Items</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
@@ -271,88 +266,39 @@ export const OrderManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => {
-                  const orderItems = formatOrderItems(order.items);
-                  return (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-mono text-sm">
-                        {order.id.slice(0, 8)}...
-                      </TableCell>
-                      <TableCell>{getCustomerDisplayName(order)}</TableCell>
-                      <TableCell>{getCustomerEmail(order)}</TableCell>
-                      <TableCell>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <Eye className="h-4 w-4 mr-1" />
-                              View ({orderItems.length})
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>Order Items</DialogTitle>
-                              <DialogDescription>
-                                Items in order {order.id.slice(0, 8)}...
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              {orderItems.length > 0 ? (
-                                orderItems.map((item, index) => (
-                                  <div key={index} className="flex items-center space-x-4 p-3 border rounded">
-                                    {item.image_url && (
-                                      <img 
-                                        src={item.image_url} 
-                                        alt={item.name}
-                                        className="w-12 h-12 object-cover rounded"
-                                      />
-                                    )}
-                                    <div className="flex-1">
-                                      <h4 className="font-medium">{item.name}</h4>
-                                      <p className="text-sm text-gray-600">
-                                        Quantity: {item.quantity} × ${item.price.toFixed(2)}
-                                      </p>
-                                    </div>
-                                    <div className="text-right">
-                                      <p className="font-medium">
-                                        ${(item.quantity * item.price).toFixed(2)}
-                                      </p>
-                                    </div>
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-gray-500">No items found in this order</p>
-                              )}
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </TableCell>
-                      <TableCell>${Number(order.total_amount).toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(order.status)}>
-                          {order.status || 'pending'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(order.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={order.status || 'pending'}
-                          onValueChange={(value) => updateOrderStatus(order.id, value)}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {filteredOrders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-mono text-sm">
+                      {order.id.slice(0, 8)}...
+                    </TableCell>
+                    <TableCell>{getCustomerDisplayName(order)}</TableCell>
+                    <TableCell>{getCustomerEmail(order)}</TableCell>
+                    <TableCell>${Number(order.total_amount).toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(order.status)}>
+                        {order.status || 'pending'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={order.status || 'pending'}
+                        onValueChange={(value) => updateOrderStatus(order.id, value)}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           ) : (
