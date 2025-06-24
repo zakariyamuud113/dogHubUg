@@ -17,6 +17,7 @@ type Product = Tables<'products'>;
 const Index = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDonateForm, setShowDonateForm] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -263,9 +264,20 @@ const Index = () => {
             Your donation helps us rescue, care for, and find loving homes for dogs in need. 
             Every contribution makes a difference in a dog's life.
           </p>
-          <DonateForm />
+          <Button 
+            size="lg" 
+            onClick={() => setShowDonateForm(true)}
+            className="bg-white text-pink-600 hover:bg-gray-100 font-semibold px-8 py-3 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
+          >
+            <Heart className="h-5 w-5 mr-2" />
+            Donate Now
+          </Button>
         </div>
       </section>
+
+      {showDonateForm && (
+        <DonateForm onClose={() => setShowDonateForm(false)} />
+      )}
 
       <Footer />
     </div>
