@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +29,7 @@ interface OrderItem {
 }
 
 interface ExtendedOrder extends Order {
-  profile?: {
+  profiles?: {
     first_name: string | null;
     last_name: string | null;
     email: string | null;
@@ -138,14 +139,14 @@ export const OrderManagement = () => {
   };
 
   const getCustomerDisplayName = (order: ExtendedOrder): string => {
-    if (order.profile?.first_name || order.profile?.last_name) {
-      return `${order.profile.first_name || ''} ${order.profile.last_name || ''}`.trim();
+    if (order.profiles?.first_name || order.profiles?.last_name) {
+      return `${order.profiles.first_name || ''} ${order.profiles.last_name || ''}`.trim();
     }
     return order.customer_name || 'Guest Customer';
   };
 
   const getCustomerEmail = (order: ExtendedOrder): string => {
-    return order.profile?.email || order.customer_email || 'No email';
+    return order.profiles?.email || order.customer_email || 'No email';
   };
 
   if (loading) {
