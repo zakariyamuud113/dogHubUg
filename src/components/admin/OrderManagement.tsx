@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ShoppingCart, Package, DollarSign, TrendingUp, Eye } from "lucide-react";
-import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +17,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-type Order = Tables<'orders'>;
-
 interface OrderItem {
   id: string;
   name: string;
@@ -28,16 +25,27 @@ interface OrderItem {
   image_url?: string;
 }
 
-interface ExtendedOrder extends Order {
+interface OrderData {
+  id: string;
+  user_id: string | null;
+  customer_name: string | null;
+  customer_email: string;
+  customer_phone: string | null;
+  total_amount: number;
+  status: string;
+  items: any;
+  shipping_address: any;
+  created_at: string;
+  updated_at: string;
   profiles?: {
     first_name: string | null;
     last_name: string | null;
     email: string | null;
-  };
+  } | null;
 }
 
 export const OrderManagement = () => {
-  const [orders, setOrders] = useState<ExtendedOrder[]>([]);
+  const [orders, setOrders] = useState<OrderData[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const { toast } = useToast();
@@ -50,26 +58,42 @@ export const OrderManagement = () => {
     try {
       console.log('Fetching all orders from orders table...');
 
-      // Fetch orders with profile information
-      const { data: ordersData, error } = await supabase
+      // First fetch orders
+      const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
-        .select(`
-          *,
-          profiles:user_id (
-            first_name,
-            last_name,
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching orders:', error);
-        throw error;
+      if (ordersError) {
+        console.error('Error fetching orders:', ordersError);
+        throw ordersError;
       }
 
-      console.log('Fetched orders with profiles:', ordersData);
-      setOrders(ordersData || []);
+      console.log('Fetched orders:', ordersData);
+
+      // Then fetch profile information for each order with a user_id
+      const ordersWithProfiles = await Promise.all(
+        (ordersData || []).map(async (order) => {
+          if (order.user_id) {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('first_name, last_name, email')
+              .eq('id', order.user_id)
+              .single();
+            
+            return {
+              ...order,
+              profiles: profileData
+            };
+          }
+          return {
+            ...order,
+            profiles: null
+          };
+        })
+      );
+
+      setOrders(ordersWithProfiles);
     } catch (error) {
       console.error('Error in fetchOrders:', error);
       toast({
@@ -138,14 +162,14 @@ export const OrderManagement = () => {
     }
   };
 
-  const getCustomerDisplayName = (order: ExtendedOrder): string => {
+  const getCustomerDisplayName = (order: OrderData): string => {
     if (order.profiles?.first_name || order.profiles?.last_name) {
       return `${order.profiles.first_name || ''} ${order.profiles.last_name || ''}`.trim();
     }
     return order.customer_name || 'Guest Customer';
   };
 
-  const getCustomerEmail = (order: ExtendedOrder): string => {
+  const getCustomerEmail = (order: OrderData): string => {
     return order.profiles?.email || order.customer_email || 'No email';
   };
 
