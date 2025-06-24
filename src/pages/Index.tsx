@@ -7,7 +7,7 @@ import { Dog, Heart, ShoppingCart, Star, Users, Package, Stethoscope, Search } f
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import DonateForm from "@/components/DonateForm";
+import { DonateForm } from "@/components/DonateForm";
 import BookingForm from "@/components/BookingForm";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
