@@ -30,6 +30,7 @@ export const OrderManagement = () => {
 
       if (error) throw error;
       
+      console.log('Fetched orders:', data);
       setOrders(data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -102,6 +103,9 @@ export const OrderManagement = () => {
     .filter(order => order.status === 'completed')
     .reduce((sum, order) => sum + Number(order.total_amount), 0);
 
+  const pendingOrders = orders.filter(order => order.status === 'pending').length;
+  const completedOrders = orders.filter(order => order.status === 'completed').length;
+
   const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800';
@@ -134,9 +138,7 @@ export const OrderManagement = () => {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {orders.filter(order => order.status === 'pending').length}
-            </div>
+            <div className="text-2xl font-bold">{pendingOrders}</div>
           </CardContent>
         </Card>
 
@@ -156,9 +158,7 @@ export const OrderManagement = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {orders.filter(order => order.status === 'completed').length}
-            </div>
+            <div className="text-2xl font-bold">{completedOrders}</div>
           </CardContent>
         </Card>
       </div>

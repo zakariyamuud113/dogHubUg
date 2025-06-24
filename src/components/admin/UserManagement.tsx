@@ -21,13 +21,19 @@ export const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // First, get the count of users from auth.users
-        const { count: authUserCount } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-
-        console.log('Total auth users count:', authUserCount);
-        setTotalUsers(authUserCount || 0);
+        // Get authenticated users count
+        const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
+        
+        if (authError) {
+          console.error('Error fetching auth users:', authError);
+          // Fallback to profiles count
+          const { count: profilesCount } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true });
+          setTotalUsers(profilesCount || 0);
+        } else {
+          setTotalUsers(authData.users.length);
+        }
 
         // Fetch ALL users from profiles table
         const { data: profiles, error: profilesError } = await supabase
