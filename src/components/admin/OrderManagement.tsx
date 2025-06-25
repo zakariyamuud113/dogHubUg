@@ -20,31 +20,33 @@ export const OrderManagement = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchOrders();
+    fetchAllOrders();
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchAllOrders = async () => {
     try {
       setLoading(true);
-      console.log('Fetching orders from checkout_sessions...');
+      console.log('Admin fetching ALL orders from checkout_sessions...');
       
+      // Admin should be able to see ALL orders regardless of user_id
       const { data, error } = await supabase
         .from('checkout_sessions')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching orders:', error);
+        console.error('Error fetching all orders:', error);
         throw error;
       }
       
-      console.log('Fetched orders:', data);
+      console.log('Admin fetched all orders:', data);
+      console.log('Total orders found:', data?.length || 0);
       setOrders(data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch orders. Please try again.",
+        description: "Failed to fetch orders. Please check your admin permissions.",
         variant: "destructive",
       });
     } finally {
@@ -54,11 +56,11 @@ export const OrderManagement = () => {
 
   const refreshOrders = async () => {
     setRefreshing(true);
-    await fetchOrders();
+    await fetchAllOrders();
     setRefreshing(false);
     toast({
       title: "Refreshed",
-      description: "Orders have been refreshed successfully.",
+      description: "All orders have been refreshed successfully.",
     });
   };
 
@@ -66,6 +68,8 @@ export const OrderManagement = () => {
     try {
       const order = orders.find(o => o.id === orderId);
       if (!order) return;
+
+      console.log('Admin updating order status:', orderId, 'to:', newStatus);
 
       const { error } = await supabase
         .from('checkout_sessions')
@@ -114,7 +118,7 @@ export const OrderManagement = () => {
       }
       
       // Refresh orders to show updated status
-      await fetchOrders();
+      await fetchAllOrders();
     } catch (error) {
       console.error('Error updating order status:', error);
       toast({
@@ -149,7 +153,7 @@ export const OrderManagement = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
-        <div className="ml-4 text-lg">Loading orders...</div>
+        <div className="ml-4 text-lg">Loading all orders...</div>
       </div>
     );
   }
@@ -164,6 +168,7 @@ export const OrderManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{orders.length}</div>
+            <p className="text-xs text-muted-foreground">From all customers</p>
           </CardContent>
         </Card>
 
@@ -174,6 +179,7 @@ export const OrderManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingOrders}</div>
+            <p className="text-xs text-muted-foreground">Need attention</p>
           </CardContent>
         </Card>
 
@@ -184,6 +190,7 @@ export const OrderManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">From completed orders</p>
           </CardContent>
         </Card>
 
@@ -194,6 +201,7 @@ export const OrderManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{completedOrders}</div>
+            <p className="text-xs text-muted-foreground">Successfully processed</p>
           </CardContent>
         </Card>
       </div>
@@ -201,7 +209,7 @@ export const OrderManagement = () => {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>Orders Management</CardTitle>
+            <CardTitle>All Customer Orders</CardTitle>
             <div className="flex gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-48">
@@ -233,6 +241,7 @@ export const OrderManagement = () => {
                   <TableHead>Order ID</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
@@ -245,9 +254,14 @@ export const OrderManagement = () => {
                     <TableCell className="font-mono text-sm">
                       {order.id.slice(0, 8)}...
                     </TableCell>
-                    <TableCell>{order.customer_name || 'N/A'}</TableCell>
+                    <TableCell className="font-medium">
+                      {order.customer_name || 'N/A'}
+                    </TableCell>
                     <TableCell>{order.customer_email}</TableCell>
-                    <TableCell>${Number(order.total_amount || 0).toFixed(2)}</TableCell>
+                    <TableCell>{order.customer_phone || 'N/A'}</TableCell>
+                    <TableCell className="font-semibold">
+                      ${Number(order.total_amount || 0).toFixed(2)}
+                    </TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(order.status)}>
                         {order.status || 'pending'}
@@ -278,14 +292,16 @@ export const OrderManagement = () => {
           ) : (
             <div className="text-center py-8">
               <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">No orders found</h3>
-              <p className="text-gray-500">
-                {statusFilter === "all" 
-                  ? "No orders have been placed yet" 
-                  : `No ${statusFilter} orders found`
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                {statusFilter === "all" ? "No orders found" : `No ${statusFilter} orders found`}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {orders.length === 0 
+                  ? "No customers have placed orders yet" 
+                  : `No orders match the ${statusFilter} filter`
                 }
               </p>
-              <Button onClick={refreshOrders} className="mt-4" variant="outline">
+              <Button onClick={refreshOrders} variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh Orders
               </Button>
