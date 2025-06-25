@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShoppingCart, Package, DollarSign, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart, Package, DollarSign, TrendingUp, RefreshCw } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -14,6 +15,7 @@ type CheckoutSession = Tables<'checkout_sessions'>;
 export const OrderManagement = () => {
   const [orders, setOrders] = useState<CheckoutSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const { toast } = useToast();
 
@@ -23,20 +25,39 @@ export const OrderManagement = () => {
 
   const fetchOrders = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('checkout_sessions')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching orders:', error);
+        throw error;
+      }
       
       console.log('Fetched orders:', data);
       setOrders(data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch orders. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const refreshOrders = async () => {
+    setRefreshing(true);
+    await fetchOrders();
+    setRefreshing(false);
+    toast({
+      title: "Refreshed",
+      description: "Orders have been refreshed successfully.",
+    });
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
@@ -54,7 +75,8 @@ export const OrderManagement = () => {
       // If order is being approved (completed), send confirmation email
       if (newStatus === 'completed' && order.status !== 'completed') {
         try {
-          await supabase.functions.invoke('send-checkout-confirmation', {
+          console.log('Sending confirmation email for order:', orderId);
+          const { data, error: emailError } = await supabase.functions.invoke('send-checkout-confirmation', {
             body: {
               customer_email: order.customer_email,
               customer_name: order.customer_name,
@@ -64,6 +86,12 @@ export const OrderManagement = () => {
             }
           });
 
+          if (emailError) {
+            console.error('Email error:', emailError);
+            throw emailError;
+          }
+
+          console.log('Email sent successfully:', data);
           toast({
             title: "Order Updated",
             description: "Order status updated and confirmation email sent to customer.",
@@ -72,7 +100,7 @@ export const OrderManagement = () => {
           console.error('Error sending confirmation email:', emailError);
           toast({
             title: "Order Updated",
-            description: "Order status updated but email notification failed.",
+            description: "Order status updated but email notification failed. Please check email configuration.",
             variant: "destructive",
           });
         }
@@ -83,8 +111,8 @@ export const OrderManagement = () => {
         });
       }
       
-      // Refresh orders
-      fetchOrders();
+      // Refresh orders to show updated status
+      await fetchOrders();
     } catch (error) {
       console.error('Error updating order status:', error);
       toast({
@@ -101,7 +129,7 @@ export const OrderManagement = () => {
 
   const totalRevenue = orders
     .filter(order => order.status === 'completed')
-    .reduce((sum, order) => sum + Number(order.total_amount), 0);
+    .reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
 
   const pendingOrders = orders.filter(order => order.status === 'pending').length;
   const completedOrders = orders.filter(order => order.status === 'completed').length;
@@ -116,7 +144,11 @@ export const OrderManagement = () => {
   };
 
   if (loading) {
-    return <div>Loading orders...</div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+      </div>
+    );
   }
 
   return (
@@ -167,17 +199,27 @@ export const OrderManagement = () => {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Orders Management</CardTitle>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Orders</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Orders</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button 
+                onClick={refreshOrders} 
+                disabled={refreshing}
+                size="sm"
+                variant="outline"
+              >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -201,7 +243,7 @@ export const OrderManagement = () => {
                   </TableCell>
                   <TableCell>{order.customer_name || 'N/A'}</TableCell>
                   <TableCell>{order.customer_email}</TableCell>
-                  <TableCell>${Number(order.total_amount).toFixed(2)}</TableCell>
+                  <TableCell>${Number(order.total_amount || 0).toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(order.status)}>
                       {order.status || 'pending'}

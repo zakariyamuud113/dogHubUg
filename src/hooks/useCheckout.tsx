@@ -43,7 +43,7 @@ export const useCheckout = () => {
         await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
         
         // Save demo order to database
-        const { error: dbError } = await supabase
+        const { data: orderData, error: dbError } = await supabase
           .from('checkout_sessions')
           .insert({
             ...checkoutData,
@@ -51,9 +51,16 @@ export const useCheckout = () => {
             total_amount,
             status: 'completed',
             stripe_session_id: `demo_${Date.now()}`,
-          });
+          })
+          .select()
+          .single();
 
-        if (dbError) throw dbError;
+        if (dbError) {
+          console.error('Database error:', dbError);
+          throw dbError;
+        }
+
+        console.log('Order saved to database:', orderData);
 
         // Clear cart after successful checkout
         if (user) {
@@ -66,23 +73,42 @@ export const useCheckout = () => {
           queryClient.invalidateQueries({ queryKey: ['cart', user.id] });
         }
 
-        // Send confirmation email
-        await supabase.functions.invoke('send-checkout-confirmation', {
-          body: {
-            customer_email: checkoutData.customer_email,
-            customer_name: checkoutData.customer_name,
-            order_id: `demo_${Date.now()}`,
-            total_amount,
-            items: checkoutData.items,
+        // Send confirmation email (don't fail checkout if email fails)
+        try {
+          console.log('Attempting to send confirmation email...');
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-checkout-confirmation', {
+            body: {
+              customer_email: checkoutData.customer_email,
+              customer_name: checkoutData.customer_name,
+              order_id: orderData.id,
+              total_amount,
+              items: checkoutData.items,
+            }
+          });
+
+          if (emailError) {
+            console.error('Email sending error:', emailError);
+            // Don't throw error, just log it
+            toast({
+              title: "Demo Checkout Successful!",
+              description: `Demo order for $${total_amount.toFixed(2)} has been processed successfully. Note: Email confirmation may have failed due to domain verification requirements.`,
+            });
+          } else {
+            console.log('Email sent successfully:', emailData);
+            toast({
+              title: "Demo Checkout Successful!",
+              description: `Demo order for $${total_amount.toFixed(2)} has been processed successfully. Check your email for confirmation.`,
+            });
           }
-        });
+        } catch (emailError) {
+          console.error('Email sending failed:', emailError);
+          toast({
+            title: "Demo Checkout Successful!",
+            description: `Demo order for $${total_amount.toFixed(2)} has been processed successfully. Email confirmation failed but order is saved.`,
+          });
+        }
 
-        toast({
-          title: "Demo Checkout Successful!",
-          description: `Demo order for $${total_amount.toFixed(2)} has been processed successfully. Check your email for confirmation.`,
-        });
-
-        return { success: true, data: { demo: true } };
+        return { success: true, data: { demo: true, order: orderData } };
       }
 
       // Real checkout mode
@@ -94,7 +120,12 @@ export const useCheckout = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Checkout session error:', error);
+        throw error;
+      }
+
+      console.log('Checkout session created:', data);
 
       if (data?.url) {
         window.open(data.url, '_blank');
