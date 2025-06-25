@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,27 +25,45 @@ export const OrderManagement = () => {
   const fetchAllOrders = async () => {
     try {
       setLoading(true);
-      console.log('Admin fetching ALL orders from checkout_sessions...');
+      console.log('Admin fetching ALL orders from ALL users...');
       
-      // Admin should be able to see ALL orders regardless of user_id
+      // First try direct database query
       const { data, error } = await supabase
         .from('checkout_sessions')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching all orders:', error);
-        throw error;
+        console.error('Direct query failed:', error);
+        console.log('Trying admin edge function...');
+        
+        // Fallback to admin edge function that bypasses RLS
+        const { data: adminData, error: adminError } = await supabase.functions.invoke('get-all-orders-admin');
+        
+        if (adminError) {
+          console.error('Admin function also failed:', adminError);
+          throw new Error('Unable to fetch orders. Please ensure you have admin privileges and RLS policies are configured correctly.');
+        }
+        
+        console.log('Successfully fetched via admin function:', adminData);
+        setOrders(adminData || []);
+        return;
       }
       
-      console.log('Admin fetched all orders:', data);
-      console.log('Total orders found:', data?.length || 0);
+      console.log('Successfully fetched all orders:', data);
+      console.log('Total orders from all users:', data?.length || 0);
+      
+      // Log the user_ids to verify we're getting orders from different users
+      const userIds = [...new Set(data?.map(order => order.user_id).filter(Boolean))];
+      console.log('Orders found from these user IDs:', userIds);
+      console.log('Orders without user_id (guest orders):', data?.filter(order => !order.user_id).length || 0);
+      
       setOrders(data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch orders. Please check your admin permissions.",
+        description: "Failed to fetch orders. This might be due to Row Level Security restrictions. Please check your admin permissions in the database.",
         variant: "destructive",
       });
     } finally {
@@ -153,7 +170,7 @@ export const OrderManagement = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
-        <div className="ml-4 text-lg">Loading all orders...</div>
+        <div className="ml-4 text-lg">Loading orders from all users...</div>
       </div>
     );
   }
@@ -242,6 +259,7 @@ export const OrderManagement = () => {
                   <TableHead>Customer</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
+                  <TableHead>User ID</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
@@ -259,6 +277,9 @@ export const OrderManagement = () => {
                     </TableCell>
                     <TableCell>{order.customer_email}</TableCell>
                     <TableCell>{order.customer_phone || 'N/A'}</TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {order.user_id ? order.user_id.slice(0, 8) + '...' : 'Guest'}
+                    </TableCell>
                     <TableCell className="font-semibold">
                       ${Number(order.total_amount || 0).toFixed(2)}
                     </TableCell>
@@ -297,7 +318,7 @@ export const OrderManagement = () => {
               </h3>
               <p className="text-gray-500 mb-4">
                 {orders.length === 0 
-                  ? "No customers have placed orders yet" 
+                  ? "No customers have placed orders yet, or there may be a permissions issue" 
                   : `No orders match the ${statusFilter} filter`
                 }
               </p>
