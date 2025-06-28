@@ -19,8 +19,22 @@ const Footer = () => {
               Your trusted companion for all things dog-related. From products to services, we've got your furry friend covered.
             </p>
             <div className="flex space-x-4">
-              <Facebook className="h-5 w-5 text-gray-400 hover:text-orange-500 cursor-pointer transition-colors" />
-              <Twitter className="h-5 w-5 text-gray-400 hover:text-orange-500 cursor-pointer transition-colors" />
+              <a 
+                href="https://www.linkedin.com/in/nahurira-joab-21014a235?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-orange-500 cursor-pointer transition-colors"
+              >
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a 
+                href="https://x.com/joab_n?t=S35I1Dv8fkvRWW6rvQQxyQ&s=09" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-orange-500 cursor-pointer transition-colors"
+              >
+                <Twitter className="h-5 w-5" />
+              </a>
               <Instagram className="h-5 w-5 text-gray-400 hover:text-orange-500 cursor-pointer transition-colors" />
             </div>
           </div>
@@ -72,7 +86,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            © 2024 DOGHub. All rights reserved.
+            © 2024 DOGHub. All rights reserved to Joab Nahurira.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <span className="text-gray-400 hover:text-orange-500 cursor-pointer text-sm transition-colors">Privacy Policy</span>
