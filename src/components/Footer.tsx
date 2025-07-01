@@ -73,11 +73,11 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-orange-500" />
-                <span className="text-gray-300">+1 (555) 123-4567</span>
+                <span className="text-gray-300">+256 7801 86849</span>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-orange-500" />
-                <span className="text-gray-300">123 Pet Street, Dog City, DC 12345</span>
+                <span className="text-gray-300">kampala, Uganda </span>
               </div>
             </div>
           </div>
@@ -86,7 +86,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            © 2024 DOGHub. All rights reserved to Joab Nahurira.
+            © 2024 DOGHub. All rights reserved to Nahurira Joab.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <span className="text-gray-400 hover:text-orange-500 cursor-pointer text-sm transition-colors">Privacy Policy</span>
