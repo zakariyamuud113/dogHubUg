@@ -43,6 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
       id: `cs_${Date.now()}`,
       url: `https://checkout.stripe.com/pay/mock-session-${Date.now()}#fidkdWxOYHwnPyd1blppbHNgWjA0SUpwb2E3T0FPVktbN0xoXVNsZGBNQXRmdEtAN2FScTZqTWFKcHUyNXJtUm49`,
       status: 'open',
+      currency: 'ugx',
     };
 
     // In a real implementation, you would save the checkout session to the database

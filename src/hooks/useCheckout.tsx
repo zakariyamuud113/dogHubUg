@@ -91,20 +91,20 @@ export const useCheckout = () => {
             // Don't throw error, just log it
             toast({
               title: "Demo Checkout Successful!",
-              description: `Demo order for $${total_amount.toFixed(2)} has been processed successfully. Note: Email confirmation may have failed due to domain verification requirements.`,
+              description: `Demo order for UGX ${total_amount.toLocaleString()} has been processed successfully. Note: Email confirmation may have failed due to domain verification requirements.`,
             });
           } else {
             console.log('Email sent successfully:', emailData);
             toast({
               title: "Demo Checkout Successful!",
-              description: `Demo order for $${total_amount.toFixed(2)} has been processed successfully. Check your email for confirmation.`,
+              description: `Demo order for UGX ${total_amount.toLocaleString()} has been processed successfully. Check your email for confirmation.`,
             });
           }
         } catch (emailError) {
           console.error('Email sending failed:', emailError);
           toast({
             title: "Demo Checkout Successful!",
-            description: `Demo order for $${total_amount.toFixed(2)} has been processed successfully. Email confirmation failed but order is saved.`,
+            description: `Demo order for UGX ${total_amount.toLocaleString()} has been processed successfully. Email confirmation failed but order is saved.`,
           });
         }
 

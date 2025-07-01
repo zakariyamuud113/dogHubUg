@@ -17,7 +17,7 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
   const [formData, setFormData] = useState<DonationData>({
     donor_email: '',
     donor_name: '',
-    amount: 25,
+    amount: 25000,
     message: '',
     is_anonymous: false,
   });
@@ -37,7 +37,7 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const quickAmounts = [10, 25, 50, 100];
+  const quickAmounts = [10000, 25000, 50000, 100000];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -72,7 +72,7 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
             </div>
 
             <div>
-              <Label htmlFor="amount">Donation Amount ($) *</Label>
+              <Label htmlFor="amount">Donation Amount (UGX) *</Label>
               <div className="grid grid-cols-4 gap-2 mt-2 mb-3">
                 {quickAmounts.map(amount => (
                   <Button
@@ -82,15 +82,15 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
                     size="sm"
                     onClick={() => handleInputChange('amount', amount)}
                   >
-                    ${amount}
+                    {amount.toLocaleString()}
                   </Button>
                 ))}
               </div>
               <Input
                 id="amount"
                 type="number"
-                min="1"
-                step="0.01"
+                min="1000"
+                step="1000"
                 required
                 value={formData.amount}
                 onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
@@ -151,7 +151,7 @@ export const DonateForm = ({ onClose }: DonateFormProps) => {
                 disabled={isProcessing} 
                 className={`flex-1 ${isDemoMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gradient-to-r from-red-500 to-pink-600'}`}
               >
-                {isProcessing ? 'Processing...' : isDemoMode ? 'Demo Donate' : `Donate $${formData.amount}`}
+                {isProcessing ? 'Processing...' : isDemoMode ? 'Demo Donate' : `Donate UGX ${formData.amount.toLocaleString()}`}
               </Button>
             </div>
           </form>
