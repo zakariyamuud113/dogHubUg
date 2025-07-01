@@ -29,7 +29,7 @@ export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
       city: '',
       state: '',
       zip: '',
-      country: 'UG',
+      country: 'US',
     },
   });
 
@@ -101,13 +101,13 @@ export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
                 {items.map(item => (
                   <div key={item.id} className="flex justify-between items-center">
                     <span>{item.name} x{item.quantity}</span>
-                    <span className="font-semibold">UGX {(item.price * item.quantity).toLocaleString()}</span>
+                    <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="border-t pt-2">
                   <div className="flex justify-between items-center font-bold text-lg">
                     <span>Total:</span>
-                    <span>UGX {total.toLocaleString()}</span>
+                    <span>${total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -169,7 +169,7 @@ export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="state">State/Region</Label>
+                    <Label htmlFor="state">State</Label>
                     <Input
                       id="state"
                       value={formData.shipping_address?.state}
@@ -177,7 +177,7 @@ export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="zip">Postal Code</Label>
+                    <Label htmlFor="zip">ZIP Code</Label>
                     <Input
                       id="zip"
                       value={formData.shipping_address?.zip}

@@ -30,7 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
     const adminEmailResponse = await resend.emails.send({
       from: "DOGHub Donations <onboarding@resend.dev>",
       to: ["nahurirajoab@gmail.com"], // Your email
-      subject: `New Donation Received - UGX ${donationData.amount.toLocaleString()}`,
+      subject: `New Donation Received - $${donationData.amount}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #f97316;">New Donation Received!</h1>
@@ -38,7 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h2 style="color: #333; margin-top: 0;">Donation Details:</h2>
             <ul style="list-style: none; padding: 0;">
-              <li><strong>Amount:</strong> UGX ${donationData.amount.toLocaleString()}</li>
+              <li><strong>Amount:</strong> $${donationData.amount}</li>
               <li><strong>Donor Email:</strong> ${donationData.donor_email}</li>
               ${donationData.donor_name && !donationData.is_anonymous ? `<li><strong>Donor Name:</strong> ${donationData.donor_name}</li>` : ''}
               ${donationData.is_anonymous ? '<li><strong>Anonymous:</strong> Yes</li>' : ''}

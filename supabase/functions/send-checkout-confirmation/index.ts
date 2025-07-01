@@ -40,7 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending checkout confirmation email to:", customer_email);
 
     const itemsList = items.map(item => 
-      `<li>${item.name} x${item.quantity} - UGX ${(item.price * item.quantity).toLocaleString()}</li>`
+      `<li>${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}</li>`
     ).join('');
 
     // Use the verified domain email or fallback to your email for testing
@@ -62,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
           </ul>
           
           <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0; font-size: 18px; font-weight: bold;">Total: UGX ${total_amount.toLocaleString()}</p>
+            <p style="margin: 0; font-size: 18px; font-weight: bold;">Total: $${total_amount.toFixed(2)}</p>
           </div>
           
           <p>Your order has been processed successfully. You will receive a shipping confirmation email once your items are dispatched.</p>

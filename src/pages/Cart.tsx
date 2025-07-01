@@ -39,8 +39,8 @@ const Cart = () => {
   }
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const shipping = 35000; // UGX 35,000
-  const tax = subtotal * 0.18; // 18% VAT for Uganda
+  const shipping = 9.99;
+  const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
 
   const checkoutItems = cartItems.map(item => ({
@@ -90,7 +90,7 @@ const Cart = () => {
                       />
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg">{item.product.name}</h3>
-                        <p className="text-orange-600 font-bold">UGX {item.product.price.toLocaleString()}</p>
+                        <p className="text-orange-600 font-bold">${item.product.price}</p>
                         {!item.product.in_stock && (
                           <p className="text-red-500 text-sm">Out of stock</p>
                         )}
@@ -140,20 +140,20 @@ const Cart = () => {
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between">
                       <span>Subtotal:</span>
-                      <span>UGX {subtotal.toLocaleString()}</span>
+                      <span>${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Shipping:</span>
-                      <span>UGX {shipping.toLocaleString()}</span>
+                      <span>${shipping.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>VAT (18%):</span>
-                      <span>UGX {Math.round(tax).toLocaleString()}</span>
+                      <span>Tax:</span>
+                      <span>${tax.toFixed(2)}</span>
                     </div>
                     <div className="border-t pt-2">
                       <div className="flex justify-between font-semibold text-lg">
                         <span>Total:</span>
-                        <span>UGX {Math.round(total).toLocaleString()}</span>
+                        <span>${total.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
