@@ -101,13 +101,13 @@ export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
                 {items.map(item => (
                   <div key={item.id} className="flex justify-between items-center">
                     <span>{item.name} x{item.quantity}</span>
-                    <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="font-semibold">UGX {((item.price * item.quantity) * 3800).toLocaleString()}</span>
                   </div>
                 ))}
                 <div className="border-t pt-2">
                   <div className="flex justify-between items-center font-bold text-lg">
                     <span>Total:</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>UGX {(total * 3800).toLocaleString()}</span>
                   </div>
                 </div>
               </div>

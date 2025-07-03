@@ -184,11 +184,11 @@ const Index = () => {
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <span className="text-2xl font-bold text-orange-600">
-                          ${product.price}
+                          UGX {(product.price * 3800).toLocaleString()}
                         </span>
                         {product.original_price && product.original_price > product.price && (
                           <span className="text-gray-500 line-through">
-                            ${product.original_price}
+                            UGX {(product.original_price * 3800).toLocaleString()}
                           </span>
                         )}
                       </div>

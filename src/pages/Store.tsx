@@ -202,11 +202,11 @@ const Store = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <span className="text-xl font-bold text-orange-600">
-                          ${product.price}
+                          UGX {(product.price * 3800).toLocaleString()}
                         </span>
                         {product.original_price && (
                           <span className="text-sm text-gray-500 line-through">
-                            ${product.original_price}
+                            UGX {(product.original_price * 3800).toLocaleString()}
                           </span>
                         )}
                       </div>

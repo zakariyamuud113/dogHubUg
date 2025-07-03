@@ -90,7 +90,7 @@ const Cart = () => {
                       />
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg">{item.product.name}</h3>
-                        <p className="text-orange-600 font-bold">${item.product.price}</p>
+                        <p className="text-orange-600 font-bold">UGX {(item.product.price * 3800).toLocaleString()}</p>
                         {!item.product.in_stock && (
                           <p className="text-red-500 text-sm">Out of stock</p>
                         )}
@@ -140,20 +140,20 @@ const Cart = () => {
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between">
                       <span>Subtotal:</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                      <span>UGX {(subtotal * 3800).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Shipping:</span>
-                      <span>${shipping.toFixed(2)}</span>
+                      <span>UGX {(shipping * 3800).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Tax:</span>
-                      <span>${tax.toFixed(2)}</span>
+                      <span>UGX {(tax * 3800).toLocaleString()}</span>
                     </div>
                     <div className="border-t pt-2">
                       <div className="flex justify-between font-semibold text-lg">
                         <span>Total:</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>UGX {(total * 3800).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>

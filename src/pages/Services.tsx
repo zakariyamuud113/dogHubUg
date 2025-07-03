@@ -137,7 +137,7 @@ const Services = () => {
                       {service.price && (
                         <div className="flex items-center text-green-600 font-semibold">
                           <DollarSign className="h-4 w-4" />
-                          <span>${service.price}</span>
+                          <span>UGX {(service.price * 3800).toLocaleString()}</span>
                         </div>
                       )}
                       {service.duration && (

@@ -341,7 +341,7 @@ const Marketplace = () => {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className="text-xl font-bold text-orange-600">
-                        ${dog.price}
+                        UGX {(dog.price * 3800).toLocaleString()}
                       </span>
                     </div>
                   </div>
