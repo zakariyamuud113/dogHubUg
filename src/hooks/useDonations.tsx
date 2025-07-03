@@ -40,7 +40,7 @@ export const useDonations = () => {
 
         toast({
           title: "Demo Donation Successful!",
-          description: `Thank you for your demo donation of UGX ${donationData.amount.toLocaleString()}!`,
+          description: `Thank you for your demo donation of $${donationData.amount}!`,
         });
 
         return { success: true, data: { demo: true } };

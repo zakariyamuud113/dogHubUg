@@ -1,14 +1,11 @@
 
 import { useState } from "react";
-import { useCheckout } from "@/hooks/useCheckout";
-import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, CreditCard } from "lucide-react";
+import { CheckoutData, useCheckout } from "@/hooks/useCheckout";
+import { X, CreditCard } from "lucide-react";
 
 interface CheckoutFormProps {
   items: Array<{
@@ -18,175 +15,194 @@ interface CheckoutFormProps {
     quantity: number;
     image_url?: string;
   }>;
-  total: number;
-  onSuccess?: () => void;
+  onClose: () => void;
 }
 
-export const CheckoutForm = ({ items, total, onSuccess }: CheckoutFormProps) => {
-  const { processCheckout, isProcessing } = useCheckout();
-  const { user } = useAuth();
-  
-  const [customerInfo, setCustomerInfo] = useState({
-    name: "",
-    email: user?.email || "",
-    phone: "",
+export const CheckoutForm = ({ items, onClose }: CheckoutFormProps) => {
+  const [formData, setFormData] = useState<CheckoutData>({
+    customer_email: '',
+    customer_name: '',
+    customer_phone: '',
+    items,
+    shipping_address: {
+      street: '',
+      city: '',
+      state: '',
+      zip: '',
+      country: 'US',
+    },
   });
-  
-  const [shippingAddress, setShippingAddress] = useState({
-    street: "",
-    city: "",
-    state: "",
-    zip: "",
-    country: "Uganda",
-  });
-  
-  const [isDemoMode, setIsDemoMode] = useState(true);
 
-  const formatPrice = (price: number) => {
-    return `UGX ${price.toLocaleString()}`;
-  };
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const { processCheckout, isProcessing } = useCheckout();
+
+  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const checkoutData = {
-      customer_email: customerInfo.email,
-      customer_name: customerInfo.name,
-      customer_phone: customerInfo.phone,
-      items,
-      shipping_address: shippingAddress.street ? shippingAddress : undefined,
-    };
+    const result = await processCheckout(formData, isDemoMode);
+    if (result.success) {
+      onClose();
+    }
+  };
 
-    const result = await processCheckout(checkoutData, isDemoMode);
-    
-    if (result.success && onSuccess) {
-      onSuccess();
+  const handleInputChange = (field: string, value: any) => {
+    if (field.startsWith('shipping_address.')) {
+      const addressField = field.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        shipping_address: {
+          ...prev.shipping_address!,
+          [addressField]: value,
+        },
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
     }
   };
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ShoppingCart className="w-5 h-5" />
-          Checkout
-        </CardTitle>
-        <CardDescription>
-          Complete your purchase - Total: {formatPrice(total)}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Demo Mode Toggle */}
-          <div className="flex items-center space-x-2 p-4 bg-orange-50 rounded-lg">
-            <Switch
-              id="demo-mode"
-              checked={isDemoMode}
-              onCheckedChange={setIsDemoMode}
-            />
-            <Label htmlFor="demo-mode" className="text-sm">
-              Demo Mode - {isDemoMode ? "Simulate checkout" : "Live payment processing"}
-            </Label>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-2xl flex items-center">
+              <CreditCard className="h-6 w-6 mr-2" />
+              Checkout
+            </CardTitle>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-
-          {/* Customer Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Customer Information</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Full Name *</Label>
-                <Input
-                  id="name"
-                  value={customerInfo.name}
-                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
-                  required
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Demo Mode Toggle */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="demo-mode"
+                  checked={isDemoMode}
+                  onChange={(e) => setIsDemoMode(e.target.checked)}
+                  className="rounded"
                 />
-              </div>
-              <div>
-                <Label htmlFor="email">Email Address *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={customerInfo.email}
-                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
-                  required
-                />
+                <Label htmlFor="demo-mode" className="text-blue-700 font-medium">
+                  Demo Mode (Test checkout without payment - no redirect)
+                </Label>
               </div>
             </div>
+
+            {/* Order Summary */}
             <div>
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                value={customerInfo.phone}
-                onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
-              />
+              <h3 className="text-lg font-semibold mb-3">Order Summary</h3>
+              <div className="space-y-2">
+                {items.map(item => (
+                  <div key={item.id} className="flex justify-between items-center">
+                    <span>{item.name} x{item.quantity}</span>
+                    <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                  </div>
+                ))}
+                <div className="border-t pt-2">
+                  <div className="flex justify-between items-center font-bold text-lg">
+                    <span>Total:</span>
+                    <span>${total.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <Separator />
-
-          {/* Shipping Address */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Shipping Address (Optional)</h3>
+            {/* Customer Information */}
             <div>
-              <Label htmlFor="street">Street Address</Label>
-              <Input
-                id="street"
-                value={shippingAddress.street}
-                onChange={(e) => setShippingAddress(prev => ({ ...prev, street: e.target.value }))}
-              />
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  value={shippingAddress.city}
-                  onChange={(e) => setShippingAddress(prev => ({ ...prev, city: e.target.value }))}
-                />
+              <h3 className="text-lg font-semibold mb-3">Customer Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="customer_name">Full Name</Label>
+                  <Input
+                    id="customer_name"
+                    value={formData.customer_name}
+                    onChange={(e) => handleInputChange('customer_name', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="customer_email">Email *</Label>
+                  <Input
+                    id="customer_email"
+                    type="email"
+                    required
+                    value={formData.customer_email}
+                    onChange={(e) => handleInputChange('customer_email', e.target.value)}
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="state">State/Region</Label>
+              <div className="mt-4">
+                <Label htmlFor="customer_phone">Phone Number</Label>
                 <Input
-                  id="state"
-                  value={shippingAddress.state}
-                  onChange={(e) => setShippingAddress(prev => ({ ...prev, state: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="zip">ZIP/Postal Code</Label>
-                <Input
-                  id="zip"
-                  value={shippingAddress.zip}
-                  onChange={(e) => setShippingAddress(prev => ({ ...prev, zip: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  value={shippingAddress.country}
-                  onChange={(e) => setShippingAddress(prev => ({ ...prev, country: e.target.value }))}
+                  id="customer_phone"
+                  type="tel"
+                  value={formData.customer_phone}
+                  onChange={(e) => handleInputChange('customer_phone', e.target.value)}
                 />
               </div>
             </div>
-          </div>
 
-          <Separator />
+            {/* Shipping Address */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Shipping Address</h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="street">Street Address</Label>
+                  <Input
+                    id="street"
+                    value={formData.shipping_address?.street}
+                    onChange={(e) => handleInputChange('shipping_address.street', e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      value={formData.shipping_address?.city}
+                      onChange={(e) => handleInputChange('shipping_address.city', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="state">State</Label>
+                    <Input
+                      id="state"
+                      value={formData.shipping_address?.state}
+                      onChange={(e) => handleInputChange('shipping_address.state', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="zip">ZIP Code</Label>
+                    <Input
+                      id="zip"
+                      value={formData.shipping_address?.zip}
+                      onChange={(e) => handleInputChange('shipping_address.zip', e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <Button
-            type="submit"
-            disabled={isProcessing}
-            className="w-full bg-orange-500 hover:bg-orange-600"
-            size="lg"
-          >
-            <CreditCard className="w-5 h-5 mr-2" />
-            {isProcessing ? "Processing..." : `Complete Purchase - ${formatPrice(total)}`}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            <div className="flex gap-4 pt-4">
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isProcessing} 
+                className={`flex-1 ${isDemoMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gradient-to-r from-orange-500 to-orange-600'}`}
+              >
+                {isProcessing ? 'Processing...' : isDemoMode ? 'Complete Demo Checkout' : 'Proceed to Payment'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
