@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +67,10 @@ export const ProductManagement = () => {
       grouped[product.category].push(product);
     });
     return grouped;
+  };
+
+  const formatPrice = (price: number) => {
+    return `UGX ${price.toLocaleString()}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -231,22 +236,22 @@ export const ProductManagement = () => {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="price">Price</Label>
+                  <Label htmlFor="price">Price (UGX)</Label>
                   <Input
                     id="price"
                     type="number"
-                    step="0.01"
+                    step="1"
                     value={formData.price}
                     onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="original_price">Original Price (optional)</Label>
+                  <Label htmlFor="original_price">Original Price (UGX, optional)</Label>
                   <Input
                     id="original_price"
                     type="number"
-                    step="0.01"
+                    step="1"
                     value={formData.original_price || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, original_price: e.target.value ? parseFloat(e.target.value) : undefined }))}
                   />
@@ -260,6 +265,18 @@ export const ProductManagement = () => {
                   value={formData.image_url}
                   onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
                 />
+                {formData.image_url && (
+                  <div className="mt-2">
+                    <img 
+                      src={formData.image_url} 
+                      alt="Preview" 
+                      className="w-20 h-20 object-cover rounded"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
               
               <div className="flex gap-6">
@@ -317,7 +334,7 @@ export const ProductManagement = () => {
                           <div>
                             <h4 className="font-semibold">{product.name}</h4>
                             <p className="text-sm text-gray-600">{product.category}</p>
-                            <p className="text-sm font-medium">${product.price}</p>
+                            <p className="text-sm font-medium">{formatPrice(product.price)}</p>
                             <div className="flex gap-2 mt-1">
                               {product.is_new && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">New</span>}
                               {product.is_sale && <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Sale</span>}
@@ -352,7 +369,7 @@ export const ProductManagement = () => {
                     <div>
                       <h3 className="font-semibold">{product.name}</h3>
                       <p className="text-sm text-gray-600">{product.category}</p>
-                      <p className="text-sm font-medium">${product.price}</p>
+                      <p className="text-sm font-medium">{formatPrice(product.price)}</p>
                     </div>
                   </div>
                   <div className="flex gap-2">

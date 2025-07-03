@@ -1,168 +1,251 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dog, ShoppingCart, Clock, DollarSign, Stethoscope, Scissors, GraduationCap, Heart, MapPin } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar, Clock, MapPin, Star, Search, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
-import BookingForm from "@/components/BookingForm";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
-
-type Service = Tables<'services'>;
 
 const Services = () => {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('services')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setServices(data || []);
-      } catch (error) {
-        console.error('Error fetching services:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchServices();
-  }, []);
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'veterinary':
-        return <Stethoscope className="h-6 w-6" />;
-      case 'grooming':
-        return <Scissors className="h-6 w-6" />;
-      case 'training':
-        return <GraduationCap className="h-6 w-6" />;
-      case 'pet-sitting':
-        return <Heart className="h-6 w-6" />;
-      case 'dog-walking':
-        return <MapPin className="h-6 w-6" />;
-      default:
-        return <Dog className="h-6 w-6" />;
+  // Mock services data - in a real app, this would come from your database
+  const services = [
+    {
+      id: 1,
+      title: "Professional Dog Grooming",
+      description: "Complete grooming service including bath, haircut, nail trimming, and ear cleaning",
+      category: "Grooming",
+      price: 75000,
+      duration: 120,
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=300&h=200&fit=crop",
+      available: true
+    },
+    {
+      id: 2,
+      title: "Veterinary Health Checkup",
+      description: "Comprehensive health examination by certified veterinarians",
+      category: "Healthcare",
+      price: 120000,
+      duration: 60,
+      rating: 4.9,
+      image: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=300&h=200&fit=crop",
+      available: true
+    },
+    {
+      id: 3,
+      title: "Dog Training Sessions",
+      description: "Basic obedience training and behavioral correction",
+      category: "Training",
+      price: 95000,
+      duration: 90,
+      rating: 4.7,
+      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=300&h=200&fit=crop",
+      available: true
+    },
+    {
+      id: 4,
+      title: "Pet Boarding",
+      description: "Safe and comfortable overnight care for your pets",
+      category: "Boarding",
+      price: 50000,
+      duration: 1440, // 24 hours
+      rating: 4.6,
+      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=300&h=200&fit=crop",
+      available: true
+    },
+    {
+      id: 5,
+      title: "Dog Walking Service",
+      description: "Daily exercise and outdoor activities for your dog",
+      category: "Exercise",
+      price: 25000,
+      duration: 60,
+      rating: 4.5,
+      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=300&h=200&fit=crop",
+      available: true
+    },
+    {
+      id: 6,
+      title: "Pet Photography",
+      description: "Professional photo sessions to capture precious moments",
+      category: "Photography",
+      price: 150000,
+      duration: 120,
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=300&h=200&fit=crop",
+      available: false
     }
+  ];
+
+  const categories = ["Grooming", "Healthcare", "Training", "Boarding", "Exercise", "Photography"];
+
+  const filteredServices = services.filter(service => {
+    const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         service.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || service.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const formatPrice = (price: number) => {
+    return `UGX ${price.toLocaleString()}`;
   };
 
-  const formatCategoryName = (category: string) => {
-    return category.split('-').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+  const formatDuration = (minutes: number) => {
+    if (minutes >= 1440) {
+      return `${Math.floor(minutes / 1440)} day${Math.floor(minutes / 1440) > 1 ? 's' : ''}`;
+    }
+    if (minutes >= 60) {
+      return `${Math.floor(minutes / 60)} hour${Math.floor(minutes / 60) > 1 ? 's' : ''}`;
+    }
+    return `${minutes} minutes`;
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading services...</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col">
-      <Header />
+    <div className="container mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Services</h1>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          Professional pet care services delivered by certified experts who love animals as much as you do
+        </p>
+      </div>
 
-      {/* Hero Section */}
-      <section className="py-12 px-4 bg-gradient-to-r from-orange-500 to-blue-600 text-white">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-4">Dog Services</h2>
-          <p className="text-xl opacity-90">Professional care for your furry friends</p>
+      {/* Filters */}
+      <div className="mb-8 bg-white p-6 rounded-lg shadow-sm">
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="relative">
+            <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input
+              placeholder="Search services..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger>
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="text-sm text-gray-600 flex items-center">
+            Showing {filteredServices.length} services
+          </div>
         </div>
-      </section>
+      </div>
 
       {/* Services Grid */}
-      <section className="py-12 px-4">
-        <div className="container mx-auto">
-          {services.length === 0 ? (
-            <div className="text-center py-16">
-              <Stethoscope className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-semibold text-gray-600 mb-2">No Services Available</h3>
-              <p className="text-gray-500">Check back soon for professional dog services!</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.map((service) => (
-                <Card key={service.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                  <div className="relative">
-                    <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
-                      {service.image_url ? (
-                        <img
-                          src={service.image_url}
-                          alt={service.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-orange-100 to-blue-100 flex items-center justify-center">
-                          {getCategoryIcon(service.category)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="absolute top-2 left-2">
-                      <Badge className="bg-blue-500 hover:bg-blue-600">
-                        {formatCategoryName(service.category)}
-                      </Badge>
-                    </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredServices.map((service) => (
+          <Card key={service.id} className="group hover:shadow-lg transition-shadow">
+            <CardHeader className="p-0">
+              <div className="relative overflow-hidden rounded-t-lg">
+                <img
+                  src={service.image}
+                  alt={service.title}
+                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <Badge 
+                  className={`absolute top-3 right-3 ${
+                    service.available ? 'bg-green-500' : 'bg-gray-500'
+                  }`}
+                >
+                  {service.available ? 'Available' : 'Unavailable'}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="mb-2">
+                <Badge variant="outline" className="text-xs">
+                  {service.category}
+                </Badge>
+              </div>
+              <CardTitle className="text-xl mb-2">{service.title}</CardTitle>
+              <CardDescription className="mb-4">{service.description}</CardDescription>
+              
+              <div className="space-y-3 mb-4">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Clock className="w-4 h-4" />
+                    <span>{formatDuration(service.duration)}</span>
                   </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-gray-600">{service.rating}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600 text-sm">
+                  <MapPin className="w-4 h-4" />
+                  <span>Available at our center</span>
+                </div>
+              </div>
 
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      {getCategoryIcon(service.category)}
-                      {service.title}
-                    </CardTitle>
-                    {service.description && (
-                      <CardDescription>{service.description}</CardDescription>
-                    )}
-                  </CardHeader>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-2xl font-bold text-orange-500">
+                  {formatPrice(service.price)}
+                </span>
+              </div>
 
-                  <CardContent>
-                    <div className="flex justify-between items-center mb-4">
-                      {service.price && (
-                        <div className="flex items-center text-green-600 font-semibold">
-                          <DollarSign className="h-4 w-4" />
-                          <span>${service.price}</span>
-                        </div>
-                      )}
-                      {service.duration && (
-                        <div className="flex items-center text-gray-500">
-                          <Clock className="h-4 w-4 mr-1" />
-                          <span>{service.duration} min</span>
-                        </div>
-                      )}
-                    </div>
-                    <BookingForm
-                      itemName={service.title}
-                      itemType="service"
-                      price={service.price || undefined}
-                      buttonText="Book Service"
-                      buttonClassName="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                    />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+              <Button 
+                asChild
+                className={`w-full ${
+                  service.available 
+                    ? 'bg-orange-500 hover:bg-orange-600' 
+                    : 'bg-gray-400 cursor-not-allowed'
+                }`}
+                disabled={!service.available}
+              >
+                <Link to={service.available ? `/book-service/${service.id}` : '#'}>
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {service.available ? 'Book Now' : 'Unavailable'}
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {filteredServices.length === 0 && (
+        <div className="text-center py-12">
+          <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+            <Search className="w-16 h-16 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No services found</h3>
+          <p className="text-gray-600 mb-6">Try adjusting your search terms or filters</p>
+          <Button 
+            onClick={() => {
+              setSearchTerm("");
+              setSelectedCategory("all");
+            }}
+            variant="outline"
+          >
+            Clear Filters
+          </Button>
         </div>
-      </section>
+      )}
 
-      <Footer />
+      {/* CTA Section */}
+      <div className="mt-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-8 text-white text-center">
+        <h2 className="text-3xl font-bold mb-4">Need a Custom Service?</h2>
+        <p className="text-xl mb-6 opacity-90">
+          Can't find what you're looking for? We offer customized pet care solutions tailored to your needs.
+        </p>
+        <Button size="lg" variant="secondary">
+          Contact Us
+        </Button>
+      </div>
     </div>
   );
 };
