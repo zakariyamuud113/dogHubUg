@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
 const Cart = () => {
-  const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { cartItems, updateQuantity, removeItem, clearCart } = useCart();
   const { user } = useAuth();
   const { processCheckout, isProcessing } = useCheckout();
   const { toast } = useToast();
@@ -46,11 +46,11 @@ const Cart = () => {
     return `UGX ${price.toLocaleString()}`;
   };
 
-  const handleQuantityChange = (productId: string, newQuantity: number) => {
+  const handleQuantityChange = (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      removeFromCart(productId);
+      removeItem(itemId);
     } else {
-      updateQuantity(productId, newQuantity);
+      updateQuantity({ id: itemId, quantity: newQuantity });
     }
     toast({
       title: "Cart updated",
@@ -158,7 +158,7 @@ const Cart = () => {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => removeItem(item.id)}
                       className="text-red-500 hover:text-red-700"
                     >
                       <Trash2 className="w-4 h-4" />

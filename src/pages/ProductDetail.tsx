@@ -19,7 +19,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (product) {
-      addToCart(product.id, quantity);
+      addToCart({ productId: product.id, quantity });
       toast({
         title: "Added to cart",
         description: `${quantity} ${product.name}(s) added to your cart.`,

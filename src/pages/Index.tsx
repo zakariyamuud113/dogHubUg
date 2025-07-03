@@ -16,7 +16,7 @@ const Index = () => {
   const featuredProducts = products?.slice(0, 3) || [];
 
   const handleAddToCart = (product: any) => {
-    addToCart(product.id, 1);
+    addToCart({ productId: product.id, quantity: 1 });
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,

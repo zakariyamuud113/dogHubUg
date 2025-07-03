@@ -17,7 +17,13 @@ export interface CartItem {
     price: number;
     image_url: string | null;
     in_stock: boolean;
+    category: string;
   };
+  // Flatten product properties for easier access
+  name: string;
+  price: number;
+  image_url: string | null;
+  category: string;
 }
 
 export const useCart = () => {
@@ -39,13 +45,22 @@ export const useCart = () => {
             name,
             price,
             image_url,
-            in_stock
+            in_stock,
+            category
           )
         `)
         .eq('user_id', user.id);
 
       if (error) throw error;
-      return data as CartItem[];
+      
+      // Transform data to flatten product properties
+      return (data as any[]).map(item => ({
+        ...item,
+        name: item.product.name,
+        price: item.product.price,
+        image_url: item.product.image_url,
+        category: item.product.category,
+      })) as CartItem[];
     },
     enabled: !!user,
   });
@@ -138,12 +153,34 @@ export const useCart = () => {
     },
   });
 
+  const clearCartMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+      
+      const { error } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
+      toast({
+        title: "Cart cleared",
+        description: "All items have been removed from your cart.",
+      });
+    },
+  });
+
   return {
     cartItems: cartQuery.data || [],
     isLoading: cartQuery.isLoading,
     addToCart: addToCartMutation.mutate,
     updateQuantity: updateQuantityMutation.mutate,
     removeItem: removeItemMutation.mutate,
+    removeFromCart: removeItemMutation.mutate,
+    clearCart: clearCartMutation.mutate,
     isAddingToCart: addToCartMutation.isPending,
   };
 };
